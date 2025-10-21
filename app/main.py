@@ -28,10 +28,10 @@ st.sidebar.title("🐟 " + CONFIG["app"]["name"])
 st.sidebar.caption("Frontend GUI – Streamlit")
 
 st.sidebar.markdown("### Navigasi")
-st.sidebar.page_link("app/pages/1_Diagnosis.py", label="Diagnosis")
-st.sidebar.page_link("app/pages/2_Knowledge_Acquisition.py", label="Knowledge Acquisition")
-st.sidebar.page_link("app/pages/3_History_&_Reports.py", label="History & Reports")
-st.sidebar.page_link("app/pages/4_KB_Explorer.py", label="KB Explorer")
+st.sidebar.page_link("pages/1_Diagnosis.py", label="Diagnosis")
+st.sidebar.page_link("pages/2_Knowledge_Acquisition.py", label="Knowledge Acquisition")
+st.sidebar.page_link("pages/3_History_&_Reports.py", label="History & Reports")
+st.sidebar.page_link("pages/4_KB_Explorer.py", label="KB Explorer")
 
 st.sidebar.divider()
 with st.sidebar.expander("Konfigurasi Ringkas"):
