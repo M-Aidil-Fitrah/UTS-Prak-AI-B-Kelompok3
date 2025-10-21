@@ -1,6 +1,6 @@
-# 🧭 Panduan Singkat Penggunaan Program
+#  Panduan Singkat Penggunaan Program
 
-## ⚙️ 1. Prasyarat
+##  1. Prasyarat
 Sebelum menjalankan aplikasi, pastikan hal berikut sudah terpasang di perangkat Anda:
 
 - **Python 3.9 atau lebih baru**
@@ -9,7 +9,7 @@ Sebelum menjalankan aplikasi, pastikan hal berikut sudah terpasang di perangkat 
 
 ---
 
-## 💻 2. Membuat Virtual Environment (opsional tapi disarankan)
+##  2. Membuat Virtual Environment (opsional tapi disarankan)
 
 ### Windows
 ```bash
@@ -25,7 +25,7 @@ source .venv/bin/activate
 
 ---
 
-## 📦 3. Instalasi Dependensi
+##  3. Instalasi Dependensi
 Setelah environment aktif, jalankan perintah berikut di terminal:
 ```bash
 pip install -r requirements.txt
@@ -41,7 +41,7 @@ pydantic
 
 ---
 
-## 🚀 4. Menjalankan Program
+##  4. Menjalankan Program
 Masuk ke folder proyek lalu jalankan perintah:
 ```bash
 streamlit run app/main.py
@@ -56,7 +56,7 @@ Klik tautan tersebut atau buka manual di browser Anda.
 
 ---
 
-## 🧱 5. Struktur Folder Utama
+##  5. Struktur Folder Utama
 Pastikan susunan folder seperti berikut:
 ```
 UTS-Prak-AI-B-Kelompok3/
@@ -79,7 +79,7 @@ UTS-Prak-AI-B-Kelompok3/
 
 ---
 
-## ✅ 6. Selesai
+##  6. Selesai
 Aplikasi siap digunakan.  
 Buka di browser pada alamat:
 ```
