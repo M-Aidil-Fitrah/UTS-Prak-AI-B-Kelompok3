@@ -20,13 +20,13 @@ def add_rule(rule_id, symptoms, disease_id, cf):
     rules = load_rules()
     rules[rule_id] = {"IF": symptoms, "THEN": disease_id, "CF": cf}
     save_rules(rules)
-    print(f"✅ Rule {rule_id} berhasil ditambahkan.")
+    print(f"Rule {rule_id} berhasil ditambahkan.")
 
 def edit_rule(rule_id, symptoms=None, disease_id=None, cf=None):
     """Mengedit rule yang sudah ada"""
     rules = load_rules()
     if rule_id not in rules:
-        print(f"❌ Rule {rule_id} tidak ditemukan.")
+        print(f"Rule {rule_id} tidak ditemukan.")
         return
     if symptoms:
         rules[rule_id]["IF"] = symptoms
@@ -35,7 +35,7 @@ def edit_rule(rule_id, symptoms=None, disease_id=None, cf=None):
     if cf is not None:
         rules[rule_id]["CF"] = cf
     save_rules(rules)
-    print(f"✏️ Rule {rule_id} berhasil diperbarui.")
+    print(f"Rule {rule_id} berhasil diperbarui.")
 
 def delete_rule(rule_id):
     """Menghapus rule dari file"""
@@ -43,9 +43,9 @@ def delete_rule(rule_id):
     if rule_id in rules:
         del rules[rule_id]
         save_rules(rules)
-        print(f"🗑️ Rule {rule_id} berhasil dihapus.")
+        print(f"Rule {rule_id} berhasil dihapus.")
     else:
-        print(f"❌ Rule {rule_id} tidak ditemukan.")
+        print(f"Rule {rule_id} tidak ditemukan.")
 
 if __name__ == "__main__":
     # Contoh penggunaan
