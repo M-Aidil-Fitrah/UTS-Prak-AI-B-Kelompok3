@@ -1,0 +1,133 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+venv/
+venv.bak/
+.env/
+.env.*          # if you use multiple env files like .env.local
+.venv/
+env/
+ENV/
+env.bak/
+.python-version
+
+# Pyenv
+.python-version
+
+# Pytest / coverage / test outputs
+.pytest_cache/
+.cache/
+nosetests.xml
+coverage.xml
+*.cover
+coverage/
+htmlcov/
+.tox/
+.nox/
+
+# Mypy / pyright / ruff caches
+.mypy_cache/
+.pyright/
+.ruff_cache/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.komodoproject
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Secret and config files
+*.pem
+*.key
+*.crt
+credentials/
+secrets.yml
+
+# Django specific
+# (Commit migrations if you want versioned schema changes; remove the next line if you prefer to track migrations)
+*/migrations/*.py[cod]
+*/migrations/__pycache__/
+# Common Django runtime files
+db.sqlite3
+media/
+staticfiles/
+static_root/
+
+# Flask / FastAPI / general web app
+instance/
+webassets-cache/
+
+# Frontend (if project includes node)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+pnpm-lock.yaml
+.pnpm-debug.log
+
+# Docker
+docker-compose.override.yml
+*.env.*.local
+
+# Python profiler / C extensions / other
+.prof
+coverage.*
+*.prof
+
+# JetBrains caches
+.idea/
+.idea/*
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# Generated documentation
+docs/_build/
+
+# Ignore files created by editors
+*~ 
+*.swp
