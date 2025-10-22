@@ -174,40 +174,34 @@ class TestInferenceWithRealData:
         print(f"  Conclusion: P3 (BGD) with CF={result['conclusions']['P3']:.3f}")
     
     def test_diagnose_method_real_data(self):
-        """Test diagnose() method dengan real KB.
+        """Test diagnose() method dengan real KB."""
+        # Mock KB object
+        class MockKB:
+            def __init__(self, symptoms, diseases, rules):
+                self.symptoms = symptoms
+                self.diseases = diseases
+                self.rules = rules
         
-        Note: Di-skip sementara karena diagnose() belum complete.
-        """
-        print(f"⊘ Diagnose method test skipped (waiting for complete implementation)")
-        return
+        kb = MockKB(self.symptoms, self.diseases, self.rules)
         
-        # # Mock KB object
-        # class MockKB:
-        #     def __init__(self, symptoms, diseases, rules):
-        #         self.symptoms = symptoms
-        #         self.diseases = diseases
-        #         self.rules = rules
-        # 
-        # kb = MockKB(self.symptoms, self.diseases, self.rules)
-        # 
-        # # Test dengan gejala bintik putih
-        # result = self.engine.diagnose(
-        #     symptom_ids=['G3', 'G9'],
-        #     user_cf=0.9,
-        #     kb=kb
-        # )
-        # 
-        # assert result.get('conclusion') is not None, "Should have a conclusion"
-        # assert result['conclusion'] == 'P1', "Should diagnose P1 (White Spot)"
-        # assert 'trace' in result
-        # assert len(result['trace']) > 0
-        # 
-        # disease = self.diseases[result['conclusion']]
-        # print(f"✓ Diagnose method with real data:")
-        # print(f"  Symptoms: G3, G9")
-        # print(f"  Diagnosis: {disease['nama']}")
-        # print(f"  CF: {result['cf']:.3f}")
-        # print(f"  Pengobatan: {disease['pengobatan'][:50]}...")
+        # Test dengan gejala bintik putih
+        result = self.engine.diagnose(
+            symptom_ids=['G3', 'G9'],
+            user_cf=0.9,
+            kb=kb
+        )
+        
+        assert 'conclusion' in result
+        assert result['conclusion'] == 'P1', "Should diagnose P1 (White Spot)"
+        assert result['cf'] > 0.6, "CF should be above threshold"
+        assert 'trace' in result
+        
+        disease = self.diseases[result['conclusion']]
+        print(f"✓ Diagnose method with real data:")
+        print(f"  Symptoms: G3, G9")
+        print(f"  Diagnosis: {disease['nama']}")
+        print(f"  CF: {result['cf']:.3f}")
+        print(f"  Pengobatan: {disease['pengobatan'][:50]}...")
 
 
 class TestSearchWithRealData:
@@ -295,12 +289,9 @@ class TestEndToEndWorkflow:
         self.engine = InferenceEngine(threshold=0.6)
     
     def test_complete_diagnosis_workflow(self):
-        """Test workflow lengkap: search -> preview -> diagnose.
-        
-        Note: Diagnose di-skip, gunakan forward_chaining untuk sementara.
-        """
+        """Test workflow lengkap: search -> preview -> diagnose."""
         print("\n" + "="*50)
-        print("COMPLETE DIAGNOSIS WORKFLOW TEST (Refactored)")
+        print("COMPLETE DIAGNOSIS WORKFLOW TEST")
         print("="*50)
         
         # 1. User mencari gejala
@@ -320,42 +311,34 @@ class TestEndToEndWorkflow:
         for pid in possible:
             print(f"   - {pid}: {self.diseases[pid]['nama']}")
         
-        # 4. Run inference (gunakan forward_chaining untuk sementara)
-        print(f"\n4. Running inference with CF=0.85...")
+        # 4. Run diagnosis dengan diagnose method
+        print(f"\n4. Running diagnosis with CF=0.85...")
         
-        # Build initial facts from selected symptoms
-        initial_facts = {sid: 0.85 for sid in selected}
-        result = self.engine.forward_chaining(
-            self.rules,
-            initial_facts,
-            kb=None  # Tanpa explanation
-        )
+        class MockKB:
+            def __init__(self, symptoms, diseases, rules):
+                self.symptoms = symptoms
+                self.diseases = diseases
+                self.rules = rules
+        
+        kb = MockKB(self.symptoms, self.diseases, self.rules)
+        result = self.engine.diagnose(selected, 0.85, kb)
         
         # 5. Show results
-        print(f"\n5. INFERENCE RESULT:")
-        print(f"   Conclusions: {result['conclusions']}")
-        print(f"   Rules used: {result['used_rules']}")
-        
-        # Cari conclusion dengan CF tertinggi
-        if result['conclusions']:
-            best_disease = max(result['conclusions'].items(), key=lambda x: x[1])
-            disease_id, cf = best_disease
-            
-            if cf >= 0.6:  # Threshold
-                disease = self.diseases[disease_id]
-                print(f"\n   PRIMARY DIAGNOSIS:")
-                print(f"   Disease: {disease['nama']}")
-                print(f"   CF: {cf:.3f} ({cf*100:.1f}%)")
-                print(f"   Cause: {disease['penyebab']}")
-                print(f"   Treatment: {disease['pengobatan'][:60]}...")
-            else:
-                print(f"\n   No diagnosis above threshold (best: {disease_id} with CF={cf:.3f})")
+        if result.get('conclusion'):
+            disease = self.diseases[result['conclusion']]
+            print(f"\n5. DIAGNOSIS RESULT:")
+            print(f"   Disease: {disease['nama']}")
+            print(f"   CF: {result['cf']:.3f} ({result['cf']*100:.1f}%)")
+            print(f"   Cause: {disease['penyebab']}")
+            print(f"   Treatment: {disease['pengobatan'][:60]}...")
+            print(f"   Rules used: {result['used_rules']}")
         else:
-            print(f"\n   No conclusions derived")
+            print(f"\n5. No conclusive diagnosis (CF below threshold)")
         
         print("\n" + "="*50)
-        print("✓ Complete workflow executed successfully (using forward_chaining)")
-        print("⚠️  Full diagnose() workflow akan aktif setelah implementation lengkap")
+        print("✓ Complete workflow executed successfully")
+        
+        assert 'conclusion' in result
 
 
 def run_all_tests():

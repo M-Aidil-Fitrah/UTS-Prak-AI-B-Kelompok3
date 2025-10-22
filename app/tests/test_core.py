@@ -75,61 +75,63 @@ class TestInferenceEngine:
         print(f"  Reasoning path: {result['reasoning_path']}")
     
     def test_backward_chaining_basic(self):
-        """Test backward chaining dasar.
+        """Test backward chaining dasar."""
+        result = self.engine.backward_chaining(
+            self.test_rules, 
+            self.test_facts, 
+            'P1',
+            kb=None
+        )
         
-        Note: Backward chaining belum sepenuhnya direfactor dalam file yang diberikan.
-        Test ini akan di-skip atau disesuaikan saat backward_chaining sudah lengkap.
-        """
-        # Skip test ini untuk sementara karena backward_chaining belum complete
-        print(f"⊘ Backward chaining test skipped (waiting for complete implementation)")
-        return
+        assert result['method'] == 'backward'
+        assert result['success'] == True, "P1 harus bisa dibuktikan dari G1+G2"
+        assert result['goal'] == 'P1'
+        assert result['cf'] > 0
         
-        # result = self.engine.backward_chaining(self.test_rules, self.test_facts, 'P1')
-        # assert result['method'] == 'backward'
-        # assert result['success'] == True, "P1 harus bisa dibuktikan dari G1+G2"
+        print(f"✓ Backward chaining: goal P1 proved with CF={result['cf']:.3f}")
     
     def test_backward_chaining_failure(self):
         """Test backward chaining yang gagal (goal tidak bisa dibuktikan)."""
-        # Skip untuk sementara
-        print(f"⊘ Backward chaining failure test skipped (waiting for implementation)")
-        return
+        facts = {'G1': 1.0}  # Hanya G1, tidak cukup untuk P1 yang butuh G1+G2
+        result = self.engine.backward_chaining(
+            self.test_rules, 
+            facts, 
+            'P1',
+            kb=None
+        )
+        
+        assert result['success'] == False, "P1 tidak bisa dibuktikan hanya dengan G1"
+        print(f"✓ Backward chaining failure handled correctly")
     
     def test_diagnose_pipeline(self):
-        """Test diagnose() method (end-to-end pipeline).
+        """Test diagnose() method (end-to-end pipeline)."""
+        # Mock KB
+        class MockKB:
+            def __init__(self):
+                self.rules = {
+                    'R1': {'IF': ['S1', 'S2'], 'THEN': 'D1', 'CF': 0.8, 'recommendation': 'Test treatment'}
+                }
+                self.symptoms = {
+                    'S1': {'id': 'S1', 'name': 'Symptom 1', 'weight': 1.0},
+                    'S2': {'id': 'S2', 'name': 'Symptom 2', 'weight': 0.9}
+                }
+                self.diseases = {
+                    'D1': {
+                        'id': 'D1', 'name': 'Disease 1', 'nama': 'Penyakit 1',
+                        'prevention': ['Wash hands'], 'pengobatan': 'Rest well'
+                    }
+                }
         
-        Note: Diagnose method belum diimplementasikan lengkap dalam refactor.
-        Test ini akan di-skip sementara.
-        """
-        print(f"⊘ Diagnose pipeline test skipped (waiting for complete implementation)")
-        return
+        kb = MockKB()
+        result = self.engine.diagnose(['S1', 'S2'], user_cf=0.9, kb=kb)
         
-        # # Mock KB
-        # class MockKB:
-        #     def __init__(self):
-        #         self.rules = {
-        #             'R1': {'IF': ['S1', 'S2'], 'THEN': 'D1', 'CF': 0.8, 'recommendation': 'Test treatment'}
-        #         }
-        #         self.symptoms = {
-        #             'S1': {'id': 'S1', 'name': 'Symptom 1', 'weight': 1.0},
-        #             'S2': {'id': 'S2', 'name': 'Symptom 2', 'weight': 0.9}
-        #         }
-        #         self.diseases = {
-        #             'D1': {
-        #                 'id': 'D1', 'name': 'Disease 1', 'nama': 'Penyakit 1',
-        #                 'prevention': ['Wash hands'], 'treatments': ['Rest']
-        #             }
-        #         }
-        # 
-        # kb = MockKB()
-        # result = self.engine.diagnose(['S1', 'S2'], user_cf=0.9, kb=kb)
-        # 
-        # assert 'conclusion' in result
-        # assert result['conclusion'] == 'D1'
-        # assert 'cf' in result
-        # assert 'trace' in result
-        # assert len(result['trace']) > 0
-        # 
-        # print(f"✓ Diagnose pipeline: {result['conclusion']} with CF={result['cf']}")
+        assert 'conclusion' in result
+        assert result['conclusion'] == 'D1'
+        assert 'cf' in result
+        assert result['cf'] > 0
+        assert 'trace' in result
+        
+        print(f"✓ Diagnose pipeline: {result['conclusion']} with CF={result['cf']}")
     
     def test_working_memory_integration(self):
         """Test integrasi dengan WorkingMemory component."""
@@ -355,18 +357,15 @@ class TestModels:
 def run_all_tests():
     """Jalankan semua test dan report hasilnya."""
     print("=" * 60)
-    print("Testing Core Modules (Refactored)")
+    print("Testing Core Modules (Refactored - Complete)")
     print("=" * 60)
-    print("Note: Test disesuaikan dengan arsitektur baru")
-    print("      - WorkingMemory tests → test_working_memory.py (belum ada)")
-    print("      - ExplanationFacility tests → test_explanation.py (belum ada)")
+    print("Note: All features now implemented!")
     print("=" * 60)
     
     test_classes = [TestInferenceEngine, TestSearchFilter, TestModels]
     total_tests = 0
     passed_tests = 0
     failed_tests = []
-    skipped_tests = 0
     
     for test_class in test_classes:
         print(f"\n--- {test_class.__name__} ---")
@@ -388,14 +387,8 @@ def run_all_tests():
                 passed_tests += 1
                 
             except AssertionError as e:
-                # Check if it's a skipped test (return early)
-                error_msg = str(e)
-                if not error_msg:  # Test returned early (skip)
-                    skipped_tests += 1
-                    passed_tests += 1  # Count as passed for now
-                else:
-                    failed_tests.append((test_class.__name__, method_name, error_msg))
-                    print(f"✗ {method_name} FAILED: {e}")
+                failed_tests.append((test_class.__name__, method_name, str(e)))
+                print(f"✗ {method_name} FAILED: {e}")
             except Exception as e:
                 failed_tests.append((test_class.__name__, method_name, str(e)))
                 print(f"✗ {method_name} ERROR: {e}")
@@ -406,7 +399,6 @@ def run_all_tests():
     print("=" * 60)
     print(f"Total tests: {total_tests}")
     print(f"Passed: {passed_tests}")
-    print(f"Skipped: {skipped_tests} (waiting for working_memory.py & explanation.py)")
     print(f"Failed: {len(failed_tests)}")
     
     if failed_tests:
@@ -416,8 +408,7 @@ def run_all_tests():
         return False
     else:
         print("\n✅ All tests passed!")
-        if skipped_tests > 0:
-            print(f"⚠️  {skipped_tests} test(s) skipped - akan aktif setelah working_memory.py & explanation.py selesai")
+        print("✅ backward_chaining() and diagnose() are now complete!")
         return True
 
 
