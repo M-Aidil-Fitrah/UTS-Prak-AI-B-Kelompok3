@@ -23,5 +23,28 @@
     "pengobatan": "Gunakan formalin 25 mg/L selama 1 jam dengan aerasi kuat atau kalium permanganat 2 mg/L.",
     "pencegahan": "Pastikan oksigen terlarut cukup, kurangi sisa pakan, dan jaga kualitas air."
   }
+  {
+    "id": "P4",
+    "nama": "Argulosis (infestasi Argulus sp.)",
+    "penyebab": "Parasit Argulus sp.",
+    "deskripsi": "Infestasi kutu air (Argulus) pada ikan budidaya air tawar, ditandai ikan sering menggosok tubuhnya, sirip/insang terganggu.",
+    "pengobatan": "Perendaman kolam dengan larutan garam atau insektisida sesuai petunjuk, reduksi kepadatan ikan.",
+    "pencegahan": "Pemeriksaan bibit, pengendalian kutu air, menjaga kebersihan kolam."
+  },
+  {
+    "id": "P5",
+    "nama": "Streptococcosis (Streptococcus agalactiae)",
+    "penyebab": "Bakteri Streptococcus agalactiae",
+    "deskripsi": "Infeksi bakteri pada ikan nila (Oreochromis niloticus) yang menyebabkan kematian massal, nafsu makan menurun, luka/perdarahan.",
+    "pengobatan": "Antibiotik sesuai dokter ikan, pemangkasan populasi terinfeksi, karantina.",
+    "pencegahan": "Imunisasi, sanitasi kolam, pembatasan stres ikan."
+  },
+  {
+    "id": "P6",
+    "nama": "Infestasi Ektoparasit Protozoa (Oodinium, Trichodina, Chilodonella)",
+    "penyebab": "Parasit protozoa ektoparasit pada ikan air tawar",
+    "deskripsi": "Ikan menunjukkan lendir berlebih, bintik-putih atau sirip rusak, sering menggosok tubuh, dan berenang abnormal.",
+    "pengobatan": "Penggantian air sebagian, perendaman dalam larutan garam ringan, pengurangan kepadatan.",
+    "pencegahan": "Karantina bibit, pengelolaan kepadatan, kontrol kualitas air."
+  }
 ]
-
