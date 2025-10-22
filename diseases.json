@@ -1,0 +1,50 @@
+[
+  {
+    "id": "P1",
+    "nama": "White Spot Disease (Ichthyophthiriasis)",
+    "penyebab": "Parasit Ichthyophthirius multifiliis",
+    "deskripsi": "Penyakit yang ditandai oleh bintik putih pada tubuh atau sirip ikan. Umum menyerang lele dan nila di kolam air tawar.",
+    "pengobatan": "Rendam ikan dalam larutan garam 2–3 g/L selama 3 hari, ganti air sebagian setiap hari.",
+    "pencegahan": "Jaga kualitas air, hindari kepadatan ikan berlebih, dan lakukan karantina ikan baru."
+  },
+  {
+    "id": "P2",
+    "nama": "Aeromonas hydrophila (Penyakit Borok)",
+    "penyebab": "Bakteri Aeromonas hydrophila",
+    "deskripsi": "Menimbulkan luka atau borok pada kulit ikan, sirip rusak, dan kadang disertai perdarahan.",
+    "pengobatan": "Berikan antibiotik oksitetrasiklin 50 mg/kg pakan selama 5 hari berturut-turut.",
+    "pencegahan": "Pertahankan kebersihan kolam, hindari luka fisik, dan kurangi stres ikan."
+  },
+  {
+    "id": "P3",
+    "nama": "Bacterial Gill Disease (BGD)",
+    "penyebab": "Bakteri Flavobacterium branchiophilum",
+    "deskripsi": "Penyakit insang yang menyebabkan ikan megap-megap, insang rusak atau pucat, dan nafsu makan berkurang.",
+    "pengobatan": "Gunakan formalin 25 mg/L selama 1 jam dengan aerasi kuat atau kalium permanganat 2 mg/L.",
+    "pencegahan": "Pastikan oksigen terlarut cukup, kurangi sisa pakan, dan jaga kualitas air."
+  }
+  {
+    "id": "P4",
+    "nama": "Argulosis (infestasi Argulus sp.)",
+    "penyebab": "Parasit Argulus sp.",
+    "deskripsi": "Infestasi kutu air (Argulus) pada ikan budidaya air tawar, ditandai ikan sering menggosok tubuhnya, sirip/insang terganggu.",
+    "pengobatan": "Perendaman kolam dengan larutan garam atau insektisida sesuai petunjuk, reduksi kepadatan ikan.",
+    "pencegahan": "Pemeriksaan bibit, pengendalian kutu air, menjaga kebersihan kolam."
+  },
+  {
+    "id": "P5",
+    "nama": "Streptococcosis (Streptococcus agalactiae)",
+    "penyebab": "Bakteri Streptococcus agalactiae",
+    "deskripsi": "Infeksi bakteri pada ikan nila (Oreochromis niloticus) yang menyebabkan kematian massal, nafsu makan menurun, luka/perdarahan.",
+    "pengobatan": "Antibiotik sesuai dokter ikan, pemangkasan populasi terinfeksi, karantina.",
+    "pencegahan": "Imunisasi, sanitasi kolam, pembatasan stres ikan."
+  },
+  {
+    "id": "P6",
+    "nama": "Infestasi Ektoparasit Protozoa (Oodinium, Trichodina, Chilodonella)",
+    "penyebab": "Parasit protozoa ektoparasit pada ikan air tawar",
+    "deskripsi": "Ikan menunjukkan lendir berlebih, bintik-putih atau sirip rusak, sering menggosok tubuh, dan berenang abnormal.",
+    "pengobatan": "Penggantian air sebagian, perendaman dalam larutan garam ringan, pengurangan kepadatan.",
+    "pencegahan": "Karantina bibit, pengelolaan kepadatan, kontrol kualitas air."
+  }
+]
