@@ -38,8 +38,16 @@ def run():
     db = get_db()
     engine = get_engine()
 
+    # Debug: Cek apakah symptoms berhasil dimuat
+    st.write(f"Debug: Total symptoms loaded: {len(db.symptoms)}")
+    
     fish_filter = fish_selector()
     symptoms = _symptoms_for_ui(db, fish_filter)
+    
+    # Debug: Cek hasil filtering
+    st.write(f"Debug: Symptoms after filter: {len(symptoms)}")
+    if len(symptoms) > 0:
+        st.write("Sample symptom:", symptoms[0])
 
     cols = st.columns([2, 1])
     with cols[0]:
