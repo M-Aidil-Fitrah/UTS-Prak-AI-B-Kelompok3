@@ -47,4 +47,44 @@
     "pengobatan": "Penggantian air sebagian, perendaman dalam larutan garam ringan, pengurangan kepadatan.",
     "pencegahan": "Karantina bibit, pengelolaan kepadatan, kontrol kualitas air."
   }
+  {
+    "id": "P7",
+    "nama": "Motile Aeromonad Septicemia (MAS) / Penyakit Merah",
+    "penyebab": "Bakteri Aeromonas hydrophila",
+    "deskripsi": "Infeksi bakteri sistemik yang umum pada lele, menyebabkan luka borok (ulcers), pendarahan (hemorrhages) pada kulit dan sirip, perut kembung (dropsy), dan mata menonjol (exophthalmia).",
+    "pengobatan": "Pemberian antibiotik (misalnya Oxytetracycline atau Enrofloxacin) yang dicampur dengan pakan sesuai dosis. Perendaman air garam dapat membantu.",
+    "pencegahan": "Menjaga kualitas air (terutama oksigen dan amonia), mengurangi kepadatan tebar, manajemen pakan yang baik, dan pemberian probiotik."
+  },
+  {
+    "id": "P8",
+    "nama": "Ichthyophthiriasis (White Spot)",
+    "penyebab": "Parasit siliata Ichthyophthirius multifiliis",
+    "deskripsi": "Penyakit 'bintik putih' yang sangat menular. Parasit terlihat sebagai bintik putih kecil di kulit, sirip, dan insang. Ikan menjadi lemah dan sering menggesekkan badan ke dasar atau dinding kolam.",
+    "pengobatan": "Menaikkan suhu air (jika memungkinkan untuk mempercepat siklus parasit), perendaman dengan larutan garam ikan (1-3 ppt) atau metilen biru (methylene blue) sesuai dosis.",
+    "pencegahan": "Karantina ikan baru sebelum dimasukkan ke kolam utama, menjaga kebersihan dasar kolam, hindari fluktuasi suhu yang drastis."
+  },
+  {
+    "id": "P9",
+    "nama": "Saprolegniasis (Penyakit Jamur Kapas)",
+    "penyebab": "Jamur Oomycetes (biasanya Saprolegnia sp.)",
+    "deskripsi": "Infeksi jamur sekunder yang biasanya menyerang ikan yang stres, terluka, atau pada telur. Terlihat jelas sebagai gumpalan kapas berwarna putih keabu-abuan pada tubuh, sirip, atau insang.",
+    "pengobatan": "Perendaman dengan larutan Kalium Permanganat (PK) atau formalin dengan dosis hati-hati. Larutan garam pekat juga bisa digunakan untuk perendaman jangka pendek.",
+    "pencegahan": "Menangani ikan dengan hati-hati agar tidak luka, menjaga kebersihan kolam dan kualitas air, segera buang ikan yang mati, desinfeksi telur (jika pada pembenihan)."
+  }
+  {
+    "id": "P10",
+    "nama": "Pseudomoniasis (Pseudomonas Septicemia)",
+    "penyebab": "Bakteri Pseudomonas fluorescens",
+    "deskripsi": "Infeksi bakteri yang menyebabkan pendarahan (hemorrhagic septicemia). Seringkali mirip dengan MAS (Aeromonas), namun gejala khasnya meliputi sisik yang mengelupas (G17) dan pendarahan di pangkal sirip (G18).",
+    "pengobatan": "Pemberian antibiotik (misalnya Oxytetracycline atau Enrofloxacin) melalui pakan. Perbaiki kualitas air secara drastis.",
+    "pencegahan": "Menjaga kebersihan kolam, mengurangi bahan organik, dan menjaga kualitas air. Bakteri ini opportunistik."
+  },
+  {
+    "id": "P11",
+    "nama": "Masalah Kualitas Air (Stres Lingkungan)",
+    "penyebab": "Kualitas air buruk (Amonia tinggi, Oksigen rendah, pH drop)",
+    "deskripsi": "Kondisi di mana ikan stres berat akibat lingkungan. Ini bukan penyakit menular, tapi seringkali jadi pemicu penyakit lain. Gejala utama adalah ikan megap-megap di permukaan, lemas, dan nafsu makan turun serentak.",
+    "pengobatan": "Ganti air sebagian (20-30%) sesegera mungkin, tambahkan aerasi (blower/venturi), kurangi pakan, dan berikan probiotik.",
+    "pencegahan": "Manajemen pakan yang baik (jangan berlebih), monitoring kualitas air rutin, jaga kepadatan kolam."
+  }
 ]
