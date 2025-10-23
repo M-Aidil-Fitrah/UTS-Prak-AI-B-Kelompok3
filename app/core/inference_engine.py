@@ -4,15 +4,26 @@ Modul ini mengkoordinasikan komponen-komponen:
 - WorkingMemory: Kelola fakta dan CF
 - ExplanationFacility: Generate penjelasan WHY/HOW
 - InferenceEngine: Orchestrator untuk forward/backward chaining
+- Integrasi dengan database_manager untuk akses rules, symptoms, diseases
 """
 
 from __future__ import annotations
 
 from typing import Dict, List, Optional, Any
+import sys
+import os
 
 # Import dari modul baru
 from .working_memory import WorkingMemory
 from .explanation import ExplanationFacility, ReasoningStep
+
+# Import database functions untuk integrasi
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    from database.database_manager import load_rules
+except ImportError:
+    # Fallback jika path tidak bekerja
+    from ..database.database_manager import load_rules
 
 
 class InferenceEngine:
