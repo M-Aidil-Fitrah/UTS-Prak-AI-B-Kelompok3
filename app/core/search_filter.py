@@ -20,6 +20,8 @@ dan mendukung fitur pencarian interaktif.
 from __future__ import annotations
 from typing import Dict, List, Any, Optional, Callable
 import re
+import os
+import json
 
 
 def _normalize_text(text: str) -> str:
@@ -416,6 +418,117 @@ def highlight_search_term(text: str, query: str) -> str:
 	# Case-insensitive replace dengan bold markdown
 	pattern = re.compile(re.escape(query), re.IGNORECASE)
 	return pattern.sub(lambda m: f"**{m.group(0)}**", text)
+
+
+# ========== CLASS-BASED API (INTEGRATED WITH DATABASE) ==========
+
+class SearchFilter:
+	"""Class wrapper untuk search & filter dengan integrasi database_manager.
+	
+	Menyediakan interface yang lebih mudah untuk Pages layer.
+	Menggunakan fungsi-fungsi database_manager untuk akses data.
+	"""
+	
+	def __init__(self):
+		"""Initialize SearchFilter dengan akses ke database."""
+		import sys
+		import os
+		sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+		
+		# Import database functions
+		from database.database_manager import load_rules
+		self.load_rules = load_rules
+		
+		# Load JSON files untuk symptoms dan diseases
+		import json
+		base_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database")
+		
+		self.symptoms_path = os.path.join(base_path, "symptoms.json")
+		self.diseases_path = os.path.join(base_path, "diseases.json")
+	
+	def _load_json(self, file_path: str) -> Dict[str, Any]:
+		"""Load JSON file helper."""
+		import json
+		if not os.path.exists(file_path):
+			return {}
+		with open(file_path, 'r', encoding='utf-8') as f:
+			return json.load(f)
+	
+	def search_symptoms(
+		self,
+		query: Optional[str] = None,
+		species_filter: Optional[List[str]] = None,
+		weight_min: Optional[float] = None,
+		weight_max: Optional[float] = None,
+		sort_by: str = "id",
+		ascending: bool = True
+	) -> List[Dict[str, Any]]:
+		"""Cari symptoms dengan akses langsung ke database."""
+		symptoms = self._load_json(self.symptoms_path)
+		return search_symptoms(
+			symptoms, query, species_filter, 
+			weight_min, weight_max, sort_by, ascending
+		)
+	
+	def search_diseases(
+		self,
+		query: Optional[str] = None,
+		species_filter: Optional[List[str]] = None,
+		sort_by: str = "id",
+		ascending: bool = True
+	) -> List[Dict[str, Any]]:
+		"""Cari diseases dengan akses langsung ke database."""
+		diseases = self._load_json(self.diseases_path)
+		return search_diseases(diseases, query, species_filter, sort_by, ascending)
+	
+	def search_rules(
+		self,
+		query: Optional[str] = None,
+		antecedent_filter: Optional[str] = None,
+		consequent_filter: Optional[str] = None,
+		cf_min: Optional[float] = None,
+		cf_max: Optional[float] = None,
+		sort_by: str = "id",
+		ascending: bool = True
+	) -> List[Dict[str, Any]]:
+		"""Cari rules dengan akses langsung ke database."""
+		rules = self.load_rules()
+		return search_rules(
+			rules, query, antecedent_filter, consequent_filter,
+			cf_min, cf_max, sort_by, ascending
+		)
+	
+	def get_rules_by_disease(self, disease_id: str) -> List[Dict[str, Any]]:
+		"""Dapatkan rules yang menghasilkan penyakit tertentu."""
+		rules = self.load_rules()
+		return get_rules_by_disease(rules, disease_id)
+	
+	def get_rules_by_symptom(self, symptom_id: str) -> List[Dict[str, Any]]:
+		"""Dapatkan rules yang menggunakan gejala tertentu."""
+		rules = self.load_rules()
+		return get_rules_by_symptom(rules, symptom_id)
+	
+	def get_related_symptoms(self, symptom_id: str) -> List[str]:
+		"""Dapatkan gejala-gejala terkait."""
+		rules = self.load_rules()
+		return get_related_symptoms(rules, symptom_id)
+	
+	def get_possible_diseases(self, symptom_ids: List[str]) -> List[str]:
+		"""Dapatkan daftar penyakit yang mungkin berdasarkan gejala."""
+		rules = self.load_rules()
+		return get_possible_diseases(rules, symptom_ids)
+	
+	def get_all_symptoms(self) -> Dict[str, Any]:
+		"""Load semua symptoms dari database."""
+		return self._load_json(self.symptoms_path)
+	
+	def get_all_diseases(self) -> Dict[str, Any]:
+		"""Load semua diseases dari database."""
+		return self._load_json(self.diseases_path)
+	
+	def get_all_rules(self) -> Dict[str, Any]:
+		"""Load semua rules dari database."""
+		return self.load_rules()
 
 
 # ===== Contoh penggunaan (untuk testing) =====
