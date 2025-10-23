@@ -1,90 +1,79 @@
 [
   {
     "id": "P1",
-    "nama": "White Spot Disease (Ichthyophthiriasis)",
-    "penyebab": "Parasit Ichthyophthirius multifiliis",
-    "deskripsi": "Penyakit yang ditandai oleh bintik putih pada tubuh atau sirip ikan. Umum menyerang lele dan nila di kolam air tawar.",
-    "pengobatan": "Rendam ikan dalam larutan garam 2–3 g/L selama 3 hari, ganti air sebagian setiap hari.",
-    "pencegahan": "Jaga kualitas air, hindari kepadatan ikan berlebih, dan lakukan karantina ikan baru."
+    "name": "White Spot Disease (Ichthyophthiriasis)",
+    "description": "Penyakit yang ditandai oleh bintik putih pada tubuh atau sirip ikan. Umum menyerang lele dan nila di kolam air tawar.",
+    "recommendation": "Rendam ikan dalam larutan garam 2–3 g/L selama 3 hari, ganti air sebagian setiap hari.",
+    "prevention": ["Jaga kualitas air", "Hindari kepadatan ikan berlebih", "Lakukan karantina ikan baru"]
   },
   {
     "id": "P2",
-    "nama": "Aeromonas hydrophila (Penyakit Borok)",
-    "penyebab": "Bakteri Aeromonas hydrophila",
-    "deskripsi": "Menimbulkan luka atau borok pada kulit ikan, sirip rusak, dan kadang disertai perdarahan.",
-    "pengobatan": "Berikan antibiotik oksitetrasiklin 50 mg/kg pakan selama 5 hari berturut-turut.",
-    "pencegahan": "Pertahankan kebersihan kolam, hindari luka fisik, dan kurangi stres ikan."
+    "name": "Aeromonas hydrophila (Penyakit Borok)",
+    "description": "Menimbulkan luka atau borok pada kulit ikan, sirip rusak, dan kadang disertai perdarahan.",
+    "recommendation": "Berikan antibiotik oksitetrasiklin 50 mg/kg pakan selama 5 hari berturut-turut.",
+    "prevention": ["Pertahankan kebersihan kolam", "Hindari luka fisik", "Kurangi stres ikan"]
   },
   {
     "id": "P3",
-    "nama": "Bacterial Gill Disease (BGD)",
-    "penyebab": "Bakteri Flavobacterium branchiophilum",
-    "deskripsi": "Penyakit insang yang menyebabkan ikan megap-megap, insang rusak atau pucat, dan nafsu makan berkurang.",
-    "pengobatan": "Gunakan formalin 25 mg/L selama 1 jam dengan aerasi kuat atau kalium permanganat 2 mg/L.",
-    "pencegahan": "Pastikan oksigen terlarut cukup, kurangi sisa pakan, dan jaga kualitas air."
+    "name": "Bacterial Gill Disease (BGD)",
+    "description": "Penyakit insang yang menyebabkan ikan megap-megap, insang rusak atau pucat, dan nafsu makan berkurang.",
+    "recommendation": "Gunakan formalin 25 mg/L selama 1 jam dengan aerasi kuat atau kalium permanganat 2 mg/L.",
+    "prevention": ["Pastikan oksigen terlarut cukup", "Kurangi sisa pakan", "Jaga kualitas air"]
   },
   {
     "id": "P4",
-    "nama": "Argulosis (infestasi Argulus sp.)",
-    "penyebab": "Parasit Argulus sp.",
-    "deskripsi": "Infestasi kutu air (Argulus) pada ikan budidaya air tawar, ditandai ikan sering menggosok tubuhnya, sirip/insang terganggu.",
-    "pengobatan": "Perendaman kolam dengan larutan garam atau insektisida sesuai petunjuk, reduksi kepadatan ikan.",
-    "pencegahan": "Pemeriksaan bibit, pengendalian kutu air, menjaga kebersihan kolam."
+    "name": "Argulosis (infestasi Argulus sp.)",
+    "description": "Infestasi kutu air (Argulus) pada ikan budidaya air tawar.",
+    "recommendation": "Perendaman kolam dengan larutan garam atau insektisida sesuai petunjuk.",
+    "prevention": ["Pemeriksaan bibit", "Pengendalian kutu air", "Menjaga kebersihan kolam"]
   },
   {
     "id": "P5",
-    "nama": "Streptococcosis (Streptococcus agalactiae)",
-    "penyebab": "Bakteri Streptococcus agalactiae",
-    "deskripsi": "Infeksi bakteri pada ikan nila (Oreochromis niloticus) yang menyebabkan kematian massal, nafsu makan menurun, luka/perdarahan.",
-    "pengobatan": "Antibiotik sesuai dokter ikan, pemangkasan populasi terinfeksi, karantina.",
-    "pencegahan": "Imunisasi, sanitasi kolam, pembatasan stres ikan."
+    "name": "Streptococcosis (Streptococcus agalactiae)",
+    "description": "Infeksi bakteri pada ikan nila yang menyebabkan kematian massal.",
+    "recommendation": "Antibiotik sesuai dokter ikan, pemangkasan populasi terinfeksi, karantina.",
+    "prevention": ["Imunisasi", "Sanitasi kolam", "Pembatasan stres ikan"]
   },
   {
     "id": "P6",
-    "nama": "Infestasi Ektoparasit Protozoa (Oodinium, Trichodina, Chilodonella)",
-    "penyebab": "Parasit protozoa ektoparasit pada ikan air tawar",
-    "deskripsi": "Ikan menunjukkan lendir berlebih, bintik-putih atau sirip rusak, sering menggosok tubuh, dan berenang abnormal.",
-    "pengobatan": "Penggantian air sebagian, perendaman dalam larutan garam ringan, pengurangan kepadatan.",
-    "pencegahan": "Karantina bibit, pengelolaan kepadatan, kontrol kualitas air."
+    "name": "Infestasi Ektoparasit Protozoa",
+    "description": "Ikan menunjukkan lendir berlebih, bintik-putih atau sirip rusak.",
+    "recommendation": "Penggantian air sebagian, perendaman dalam larutan garam ringan.",
+    "prevention": ["Karantina bibit", "Pengelolaan kepadatan", "Kontrol kualitas air"]
   },
   {
     "id": "P7",
-    "nama": "Motile Aeromonad Septicemia (MAS) / Penyakit Merah",
-    "penyebab": "Bakteri Aeromonas hydrophila",
-    "deskripsi": "Infeksi bakteri sistemik yang umum pada lele, menyebabkan luka borok (ulcers), pendarahan (hemorrhages) pada kulit dan sirip, perut kembung (dropsy), dan mata menonjol (exophthalmia).",
-    "pengobatan": "Pemberian antibiotik (misalnya Oxytetracycline atau Enrofloxacin) yang dicampur dengan pakan sesuai dosis. Perendaman air garam dapat membantu.",
-    "pencegahan": "Menjaga kualitas air (terutama oksigen dan amonia), mengurangi kepadatan tebar, manajemen pakan yang baik, dan pemberian probiotik."
+    "name": "Motile Aeromonad Septicemia (MAS)",
+    "description": "Infeksi bakteri sistemik yang umum pada lele.",
+    "recommendation": "Pemberian antibiotik (Oxytetracycline atau Enrofloxacin) yang dicampur dengan pakan.",
+    "prevention": ["Menjaga kualitas air", "Mengurangi kepadatan tebar", "Pemberian probiotik"]
   },
   {
     "id": "P8",
-    "nama": "Ichthyophthiriasis (White Spot)",
-    "penyebab": "Parasit siliata Ichthyophthirius multifiliis",
-    "deskripsi": "Penyakit 'bintik putih' yang sangat menular. Parasit terlihat sebagai bintik putih kecil di kulit, sirip, dan insang. Ikan menjadi lemah dan sering menggesekkan badan ke dasar atau dinding kolam.",
-    "pengobatan": "Menaikkan suhu air (jika memungkinkan untuk mempercepat siklus parasit), perendaman dengan larutan garam ikan (1-3 ppt) atau metilen biru (methylene blue) sesuai dosis.",
-    "pencegahan": "Karantina ikan baru sebelum dimasukkan ke kolam utama, menjaga kebersihan dasar kolam, hindari fluktuasi suhu yang drastis."
+    "name": "Ichthyophthiriasis (White Spot)",
+    "description": "Penyakit 'bintik putih' yang sangat menular.",
+    "recommendation": "Menaikkan suhu air, perendaman dengan larutan garam atau metilen biru.",
+    "prevention": ["Karantina ikan baru", "Menjaga kebersihan", "Hindari fluktuasi suhu"]
   },
   {
     "id": "P9",
-    "nama": "Saprolegniasis (Penyakit Jamur Kapas)",
-    "penyebab": "Jamur Oomycetes (biasanya Saprolegnia sp.)",
-    "deskripsi": "Infeksi jamur sekunder yang biasanya menyerang ikan yang stres, terluka, atau pada telur. Terlihat jelas sebagai gumpalan kapas berwarna putih keabu-abuan pada tubuh, sirip, atau insang.",
-    "pengobatan": "Perendaman dengan larutan Kalium Permanganat (PK) atau formalin dengan dosis hati-hati. Larutan garam pekat juga bisa digunakan untuk perendaman jangka pendek.",
-    "pencegahan": "Menangani ikan dengan hati-hati agar tidak luka, menjaga kebersihan kolam dan kualitas air, segera buang ikan yang mati, desinfeksi telur (jika pada pembenihan)."
+    "name": "Saprolegniasis (Penyakit Jamur Kapas)",
+    "description": "Infeksi jamur sekunder yang biasanya menyerang ikan yang stres.",
+    "recommendation": "Perendaman dengan Kalium Permanganat atau formalin.",
+    "prevention": ["Tangani ikan hati-hati", "Jaga kebersihan kolam", "Desinfeksi telur"]
   },
   {
     "id": "P10",
-    "nama": "Pseudomoniasis (Pseudomonas Septicemia)",
-    "penyebab": "Bakteri Pseudomonas fluorescens",
-    "deskripsi": "Infeksi bakteri yang menyebabkan pendarahan (hemorrhagic septicemia). Seringkali mirip dengan MAS (Aeromonas), namun gejala khasnya meliputi sisik yang mengelupas (G17) dan pendarahan di pangkal sirip (G18).",
-    "pengobatan": "Pemberian antibiotik (misalnya Oxytetracycline atau Enrofloxacin) melalui pakan. Perbaiki kualitas air secara drastis.",
-    "pencegahan": "Menjaga kebersihan kolam, mengurangi bahan organik, dan menjaga kualitas air. Bakteri ini opportunistik."
+    "name": "Pseudomoniasis (Pseudomonas Septicemia)",
+    "description": "Infeksi bakteri yang menyebabkan pendarahan.",
+    "recommendation": "Pemberian antibiotik melalui pakan, perbaiki kualitas air.",
+    "prevention": ["Jaga kebersihan kolam", "Kurangi bahan organik"]
   },
   {
     "id": "P11",
-    "nama": "Masalah Kualitas Air (Stres Lingkungan)",
-    "penyebab": "Kualitas air buruk (Amonia tinggi, Oksigen rendah, pH drop)",
-    "deskripsi": "Kondisi di mana ikan stres berat akibat lingkungan. Ini bukan penyakit menular, tapi seringkali jadi pemicu penyakit lain. Gejala utama adalah ikan megap-megap di permukaan, lemas, dan nafsu makan turun serentak.",
-    "pengobatan": "Ganti air sebagian (20-30%) sesegera mungkin, tambahkan aerasi (blower/venturi), kurangi pakan, dan berikan probiotik.",
-    "pencegahan": "Manajemen pakan yang baik (jangan berlebih), monitoring kualitas air rutin, jaga kepadatan kolam."
+    "name": "Masalah Kualitas Air (Stres Lingkungan)",
+    "description": "Kondisi ikan stres berat akibat lingkungan buruk.",
+    "recommendation": "Ganti air sebagian, tambahkan aerasi, kurangi pakan, berikan probiotik.",
+    "prevention": ["Manajemen pakan baik", "Monitoring kualitas air", "Jaga kepadatan kolam"]
   }
 ]
