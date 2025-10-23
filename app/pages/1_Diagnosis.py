@@ -43,29 +43,8 @@ def run():
     db = get_db()
     engine = get_engine()
 
-    # Debug: Cek path database
-    st.write(f"🔍 Debug - Database path: {db.database_path}")
-    st.write(f"🔍 Debug - Database path exists: {db.database_path.exists()}")
-    st.write(f"🔍 Debug - Symptoms file: {db.database_path / 'symptoms.json'}")
-    st.write(f"🔍 Debug - Symptoms file exists: {(db.database_path / 'symptoms.json').exists()}")
-    
-    # Debug: Cek apakah symptoms berhasil dimuat
-    st.write(f"🔍 Debug - Total symptoms loaded: {len(db.symptoms)}")
-    
-    if len(db.symptoms) > 0:
-        st.write("🔍 Debug - Sample symptoms from db:")
-        for i, (key, val) in enumerate(list(db.symptoms.items())[:3]):
-            st.write(f"  - {key}: name={getattr(val, 'name', 'NO NAME')}, species={getattr(val, 'species', 'NO SPECIES')}")
-    
     fish_filter = fish_selector()
-    st.write(f"🔍 Debug - Fish filter selected: {fish_filter}")
-    
     symptoms = _symptoms_for_ui(db, fish_filter)
-    
-    # Debug: Cek hasil filtering
-    st.write(f"🔍 Debug - Symptoms after filter: {len(symptoms)}")
-    if len(symptoms) > 0:
-        st.write("🔍 Debug - First 3 symptoms for UI:", symptoms[:3])
 
     cols = st.columns([2, 1])
     with cols[0]:
