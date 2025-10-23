@@ -22,7 +22,7 @@
     "deskripsi": "Penyakit insang yang menyebabkan ikan megap-megap, insang rusak atau pucat, dan nafsu makan berkurang.",
     "pengobatan": "Gunakan formalin 25 mg/L selama 1 jam dengan aerasi kuat atau kalium permanganat 2 mg/L.",
     "pencegahan": "Pastikan oksigen terlarut cukup, kurangi sisa pakan, dan jaga kualitas air."
-  }
+  },
   {
     "id": "P4",
     "nama": "Argulosis (infestasi Argulus sp.)",
@@ -46,7 +46,7 @@
     "deskripsi": "Ikan menunjukkan lendir berlebih, bintik-putih atau sirip rusak, sering menggosok tubuh, dan berenang abnormal.",
     "pengobatan": "Penggantian air sebagian, perendaman dalam larutan garam ringan, pengurangan kepadatan.",
     "pencegahan": "Karantina bibit, pengelolaan kepadatan, kontrol kualitas air."
-  }
+  },
   {
     "id": "P7",
     "nama": "Motile Aeromonad Septicemia (MAS) / Penyakit Merah",
@@ -70,7 +70,7 @@
     "deskripsi": "Infeksi jamur sekunder yang biasanya menyerang ikan yang stres, terluka, atau pada telur. Terlihat jelas sebagai gumpalan kapas berwarna putih keabu-abuan pada tubuh, sirip, atau insang.",
     "pengobatan": "Perendaman dengan larutan Kalium Permanganat (PK) atau formalin dengan dosis hati-hati. Larutan garam pekat juga bisa digunakan untuk perendaman jangka pendek.",
     "pencegahan": "Menangani ikan dengan hati-hati agar tidak luka, menjaga kebersihan kolam dan kualitas air, segera buang ikan yang mati, desinfeksi telur (jika pada pembenihan)."
-  }
+  },
   {
     "id": "P10",
     "nama": "Pseudomoniasis (Pseudomonas Septicemia)",
