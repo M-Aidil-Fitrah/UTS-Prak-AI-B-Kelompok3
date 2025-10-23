@@ -15,7 +15,14 @@ import sys
 import json
 from datetime import datetime
 from typing import Dict, Any, Optional, List
-from fpdf import FPDF
+
+# Optional import for PDF generation
+try:
+    from fpdf import FPDF
+    FPDF_AVAILABLE = True
+except ImportError:
+    FPDF_AVAILABLE = False
+    FPDF = None
 
 # Import database functions untuk integrasi
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -47,16 +54,30 @@ class ReportingService:
     
     def _get_disease_by_id(self, disease_id: str) -> Optional[Dict[str, Any]]:
         """Ambil detail disease dari database."""
-        diseases = self._load_json(self.diseases_path)
-        return diseases.get(disease_id)
+        diseases_list = self._load_json(self.diseases_path)
+        
+        # Convert list to dict for easier lookup
+        if isinstance(diseases_list, list):
+            for disease in diseases_list:
+                if disease.get('id') == disease_id:
+                    return disease
+            return None
+        else:
+            return diseases_list.get(disease_id)
     
     def _get_symptoms_by_ids(self, symptom_ids: List[str]) -> List[Dict[str, Any]]:
         """Ambil detail symptoms dari database."""
-        symptoms = self._load_json(self.symptoms_path)
+        symptoms_list = self._load_json(self.symptoms_path)
+        
+        # Convert list to dict for easier lookup
+        if isinstance(symptoms_list, list):
+            symptoms_dict = {s.get('id'): s for s in symptoms_list if 'id' in s}
+        else:
+            symptoms_dict = symptoms_list
+        
         return [
-            {"id": sid, **symptoms.get(sid, {})} 
-            for sid in symptom_ids 
-            if sid in symptoms
+            symptoms_dict.get(sid, {"id": sid, "nama": f"Symptom {sid}"}) 
+            for sid in symptom_ids
         ]
     
     def _generate_filename(self, extension: str) -> str:
@@ -194,7 +215,13 @@ class ReportingService:
 
         Returns:
             str: Path ke file laporan yang telah dibuat.
+        
+        Raises:
+            ImportError: Jika fpdf tidak terinstall.
         """
+        if not FPDF_AVAILABLE:
+            raise ImportError("fpdf tidak terinstall. Install dengan: pip install fpdf")
+        
         filepath = self._generate_filename("pdf")
         pdf = FPDF()
         pdf.add_page()

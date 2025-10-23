@@ -158,7 +158,12 @@ class TestFullWorkflow:
         
         # Step 2: Generate TXT report jika ada conclusion
         if result.get('conclusion'):
-            txt_report = self.reporting.generate_txt_report(result, self.kb)
+            # Updated signature: generate_txt_report(result, symptom_ids, user_cf)
+            txt_report = self.reporting.generate_txt_report(
+                result=result,
+                symptom_ids=['G1', 'G2'],
+                user_cf=0.9
+            )
             
             assert os.path.exists(txt_report)
             assert os.path.getsize(txt_report) > 0
