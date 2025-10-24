@@ -8,11 +8,19 @@ def fish_selector():
         ["Lele", "Nila", "Gurame"]
     )
 
-def symptom_multiselect(symptoms: List[Dict[str, Any]], max_select: int = 10) -> List[str]:
+def symptom_multiselect(symptoms: List[Dict[str, Any]], max_select: int = 10, default_ids: List[str] = None) -> List[str]:
     options = {s["name"]: s["id"] for s in symptoms}
+    id_to_name = {s["id"]: s["name"] for s in symptoms}
+    
+    # Convert default IDs to names for multiselect
+    default_names = []
+    if default_ids:
+        default_names = [id_to_name[sid] for sid in default_ids if sid in id_to_name]
+    
     selected = st.multiselect(
         "Pilih gejala",
         options=list(options.keys()),
+        default=default_names,
         help="Pilih beberapa gejala fisik/perilaku yang teramati."
     )
     if len(selected) > max_select:
@@ -20,8 +28,8 @@ def symptom_multiselect(symptoms: List[Dict[str, Any]], max_select: int = 10) ->
         selected = selected[:max_select]
     return [options[name] for name in selected]
 
-def confidence_slider(label: str = "Keyakinan pengguna (CF input)"):
-    return st.slider(label, 0.0, 1.0, 0.8, 0.05)
+def confidence_slider(label: str = "Keyakinan pengguna (CF input)", default_value: float = 0.8):
+    return st.slider(label, 0.0, 1.0, default_value, 0.05)
 
 def result_card(conclusion: str, cf_value: float, recommendation: Optional[str] = None):
     st.success(f"**Hasil:** {conclusion}")
