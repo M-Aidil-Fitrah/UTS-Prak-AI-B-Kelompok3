@@ -5,24 +5,33 @@ Memungkinkan pengguna untuk mencari, memfilter, dan melihat detail dari:
 - Gejala (Symptoms)
 - Penyakit (Diseases)
 - Aturan (Rules)
-
-Menggunakan modul `search_filter` untuk logika pencarian dan `database_manager`
-untuk akses data.
 """
 import streamlit as st
-from core.search_filter import SearchFilter
+from pathlib import Path
 import pandas as pd
+from ui.theming import page_header
+from database.database_manager import DatabaseManager
+from core.search_filter import SearchFilter
 
-# Inisialisasi search filter
-sf = SearchFilter()
+@st.cache_resource
+def get_db():
+    db_path = Path(__file__).parent.parent / "database"
+    db = DatabaseManager(db_path)
+    db.load_all()
+    return db
+
+@st.cache_resource
+def get_sf():
+    return SearchFilter()
 
 def show_symptoms_explorer():
     """Tampilkan UI untuk eksplorasi gejala."""
     st.subheader("Symptom Explorer")
 
-    # Ambil semua gejala untuk mendapatkan daftar spesies
+    db = get_db()
+    sf = get_sf()
+    
     all_symptoms = sf.get_all_symptoms()
-    # Correctly iterate over object attributes
     all_species = sorted(list(set(
         species_item
         for s in all_symptoms.values()
@@ -30,15 +39,12 @@ def show_symptoms_explorer():
         for species_item in s.species
     )))
 
-
-    # Filter UI
     col1, col2 = st.columns([3, 1])
     with col1:
         query = st.text_input("Cari berdasarkan nama, ID, atau deskripsi gejala:", key="symptom_query")
     with col2:
         species_filter = st.multiselect("Filter berdasarkan spesies:", options=all_species, key="symptom_species")
 
-    # Panggil fungsi search
     results = sf.search_symptoms(query=query, species_filter=species_filter, sort_by="id")
 
     st.write(f"Menampilkan **{len(results)}** dari **{len(all_symptoms)}** gejala.")
@@ -47,7 +53,6 @@ def show_symptoms_explorer():
         st.warning("Tidak ada gejala yang cocok dengan kriteria pencarian Anda.")
         return
 
-    # Tampilkan hasil dalam bentuk tabel
     display_data = []
     for r in results:
         display_data.append({
@@ -63,8 +68,10 @@ def show_diseases_explorer():
     """Tampilkan UI untuk eksplorasi penyakit."""
     st.subheader("Disease Explorer")
 
+    db = get_db()
+    sf = get_sf()
+    
     all_diseases = sf.get_all_diseases()
-    # Correctly iterate over object attributes
     all_species = sorted(list(set(
         species_item
         for d in all_diseases.values()
@@ -72,7 +79,6 @@ def show_diseases_explorer():
         for species_item in d.species
     )))
 
-    # Filter UI
     col1, col2 = st.columns([3, 1])
     with col1:
         query = st.text_input("Cari berdasarkan nama, ID, atau deskripsi penyakit:", key="disease_query")
@@ -87,7 +93,6 @@ def show_diseases_explorer():
         st.warning("Tidak ada penyakit yang cocok dengan kriteria pencarian Anda.")
         return
 
-    # Tampilkan hasil dalam expander
     for r in results:
         with st.expander(f"**{r.id}**: {r.nama}"):
             st.markdown(f"**Deskripsi:** {r.deskripsi or '-'}")
@@ -101,6 +106,9 @@ def show_rules_explorer():
     """Tampilkan UI untuk eksplorasi aturan."""
     st.subheader("Rule Explorer")
 
+    db = get_db()
+    sf = get_sf()
+    
     all_rules = sf.get_all_rules()
     all_symptoms = sf.get_all_symptoms()
     all_diseases = sf.get_all_diseases()
@@ -108,7 +116,6 @@ def show_rules_explorer():
     symptom_options = {sid: f"{sid}: {s.nama}" for sid, s in all_symptoms.items()}
     disease_options = {did: f"{did}: {d.nama}" for did, d in all_diseases.items()}
 
-    # Filter UI
     query = st.text_input("Cari berdasarkan ID, why, atau recommendation:", key="rule_query")
     
     col1, col2 = st.columns(2)
@@ -140,7 +147,6 @@ def show_rules_explorer():
         st.warning("Tidak ada aturan yang cocok dengan kriteria pencarian Anda.")
         return
 
-    # Tampilkan hasil
     for r_id, r_body in results.items():
         if_clause = " AND ".join(r_body.get('IF', []))
         then_clause = r_body.get('THEN', '')
@@ -151,10 +157,8 @@ def show_rules_explorer():
 
 def run():
     """Fungsi utama untuk menjalankan halaman KB Explorer."""
-    st.set_page_config(page_title="Knowledge Base Explorer", layout="wide")
-    st.title("🔍 Knowledge Base Explorer")
-    st.markdown("Gunakan halaman ini untuk menjelajahi, mencari, dan memfilter semua data dalam basis pengetahuan sistem pakar.")
-
+    page_header("Knowledge Base Explorer", "Jelajahi, cari, dan filter semua data dalam basis pengetahuan.")
+    
     tab1, tab2, tab3 = st.tabs(["Gejala (Symptoms)", "Penyakit (Diseases)", "Aturan (Rules)"])
 
     with tab1:
