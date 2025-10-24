@@ -97,7 +97,7 @@ class StorageService:
             history_dir: Direktori untuk menyimpan history files
         """
         self.history_dir = history_dir
-        self.history_file = os.path.join(history_dir, "consultation_history.json")
+        self.history_file = os.path.join(history_dir, "consultations.json")
         self.json_storage = JsonStorage()
         
         # Pastikan direktori ada
@@ -117,90 +117,90 @@ class StorageService:
     
     def _get_symptoms_by_ids(self, symptom_ids: List[str]) -> List[Dict[str, Any]]:
         """Ambil detail symptoms dari database."""
-        symptoms = self._load_json(self.symptoms_path)
-        return [
-            {"id": sid, **symptoms.get(sid, {})} 
-            for sid in symptom_ids 
-            if sid in symptoms
-        ]
+        symptoms_data = self._load_json(self.symptoms_path)
+        found_symptoms = []
+
+        if isinstance(symptoms_data, dict):
+            for sid in symptom_ids:
+                if sid in symptoms_data:
+                    symptom_details = symptoms_data[sid].copy() # Use copy to avoid modifying original
+                    symptom_details['id'] = sid
+                    found_symptoms.append(symptom_details)
+        elif isinstance(symptoms_data, list):
+            # Create a lookup dictionary for faster access if it's a list
+            symptoms_dict = {s['id']: s for s in symptoms_data if 'id' in s}
+            for sid in symptom_ids:
+                if sid in symptoms_dict:
+                    found_symptoms.append(symptoms_dict[sid])
+        
+        return found_symptoms
     
     def _get_disease_by_id(self, disease_id: str) -> Optional[Dict[str, Any]]:
         """Ambil detail disease dari database."""
         diseases = self._load_json(self.diseases_path)
-        return diseases.get(disease_id)
+        # Cek apakah diseases adalah list atau dict untuk kompatibilitas
+        if isinstance(diseases, dict):
+            return diseases.get(disease_id)
+        elif isinstance(diseases, list):
+            # Jika ini adalah daftar, cari secara manual
+            for disease in diseases:
+                if disease.get("id") == disease_id:
+                    return disease
+        return None
     
     def save_consultation(
-        self,
-        symptom_ids: List[str],
-        diagnosis_result: Dict[str, Any],
+        self, 
+        symptom_ids: List[str], 
+        diagnosis_result: Dict[str, Any], 
         user_cf: float,
         user_info: Optional[Dict[str, Any]] = None
-    ) -> str:
-        """Simpan hasil konsultasi dengan enrichment data dari database.
+    ):
+        """Menyimpan satu konsultasi ke file history utama."""
+        # 1. Muat history yang ada
+        history = self.json_storage.read(self.history_file)
+        if history is None:
+            history = [] # Buat list baru jika file tidak ada atau error
+
+        # Pastikan history adalah list
+        if not isinstance(history, list):
+            print(f"Warning: File history '{self.history_file}' bukan list. Membuat file baru.")
+            history = []
+
+        # 2. Buat data untuk disimpan
+        consultation_id = f"C_{datetime.now().strftime('%Y%m%d%H%M%S')}_{os.urandom(4).hex()}"
         
-        Args:
-            symptom_ids: List ID gejala yang dipilih user
-            diagnosis_result: Hasil dari inference engine
-            user_cf: User certainty factor
-            user_info: Info tambahan user (nama, dll) - optional
-            
-        Returns:
-            Consultation ID yang di-generate
-        """
-        # Generate consultation ID
-        consultation_id = f"CONS_{datetime.now().strftime('%Y%m%d%H%M%S')}"
-        
-        # Enrich dengan detail symptoms dari database
-        symptoms_detail = self._get_symptoms_by_ids(symptom_ids)
-        
-        # Enrich dengan detail disease dari database (jika ada conclusion)
-        disease_detail = None
-        conclusion_id = diagnosis_result.get('conclusion')
-        if conclusion_id:
-            disease_detail = self._get_disease_by_id(conclusion_id)
-        
-        # Build consultation data
-        consultation_data = {
-            "id": consultation_id,
+        data_to_save = {
+            "consultation_id": consultation_id,
             "timestamp": datetime.now().isoformat(),
             "user_info": user_info or {},
+            "user_cf": user_cf,
             "symptoms": {
                 "ids": symptom_ids,
-                "details": symptoms_detail
+                "count": len(symptom_ids)
             },
-            "diagnosis": {
-                "conclusion_id": conclusion_id,
-                "conclusion_detail": disease_detail,
-                "cf": diagnosis_result.get('cf', 0.0),
-                "method": diagnosis_result.get('method', 'forward'),
-                "used_rules": diagnosis_result.get('used_rules', []),
-                "reasoning_path": diagnosis_result.get('reasoning_path', '')
-            },
-            "user_cf": user_cf,
-            "trace": diagnosis_result.get('trace', [])
+            "diagnosis": diagnosis_result
         }
         
-        # Load existing history
-        history = self.load_consultation_history()
+        # 3. Tambahkan konsultasi baru ke awal list (agar yang terbaru di atas)
+        history.insert(0, data_to_save)
         
-        # Append new consultation
-        history.append(consultation_data)
-        
-        # Save back to file
-        self.json_storage.write(self.history_file, history)
-        
-        return consultation_id
-    
+        # 4. Tulis kembali seluruh history ke file
+        try:
+            if self.json_storage.write(self.history_file, history):
+                return consultation_id
+            else:
+                raise IOError("Gagal menulis ke file history.")
+        except Exception as e:
+            raise IOError(f"Gagal menyimpan file konsultasi: {e}")
+
     def load_consultation_history(
         self,
-        limit: Optional[int] = None,
-        filter_by_date: Optional[str] = None
+        limit: int = 20
     ) -> List[Dict[str, Any]]:
         """Load consultation history dari file.
         
         Args:
             limit: Batasi jumlah history yang dikembalikan (latest first)
-            filter_by_date: Filter by date dalam format YYYY-MM-DD
             
         Returns:
             List consultation data, sorted by timestamp descending
@@ -211,13 +211,6 @@ class StorageService:
         # Jika file belum ada atau kosong
         if not history:
             return []
-        
-        # Filter by date jika diberikan
-        if filter_by_date:
-            history = [
-                h for h in history
-                if h.get('timestamp', '').startswith(filter_by_date)
-            ]
         
         # Sort by timestamp descending (terbaru dulu)
         history.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
@@ -247,14 +240,16 @@ class StorageService:
     
     def search_consultations(
         self,
+        history: List[Dict[str, Any]],
         query: Optional[str] = None,
         disease_filter: Optional[str] = None,
         date_from: Optional[str] = None,
         date_to: Optional[str] = None
     ) -> List[Dict[str, Any]]:
-        """Search consultations dengan berbagai filter.
+        """Search consultations dengan berbagai filter dari list history yang sudah di-load.
         
         Args:
+            history: List of consultations to search within.
             query: Kata kunci untuk search di ID atau disease name
             disease_filter: Filter by disease ID
             date_from: Filter dari tanggal (YYYY-MM-DD)
@@ -263,21 +258,19 @@ class StorageService:
         Returns:
             List filtered consultations
         """
-        history = self.load_consultation_history()
         results = []
         
         for consultation in history:
             # Filter by query
             if query:
-                cons_id = consultation.get('id', '').lower()
-                disease_detail = consultation.get('diagnosis', {}).get('conclusion_detail', {})
-                disease_name = disease_detail.get('nama', disease_detail.get('name', '')).lower()
-                if query.lower() not in cons_id and query.lower() not in disease_name:
+                cons_id = consultation.get('consultation_id', '').lower()
+                disease_id = consultation.get('diagnosis', {}).get('conclusion', '').lower()
+                if query.lower() not in cons_id and query.lower() not in disease_id:
                     continue
             
             # Filter by disease
             if disease_filter:
-                conclusion_id = consultation.get('diagnosis', {}).get('conclusion_id')
+                conclusion_id = consultation.get('diagnosis', {}).get('conclusion')
                 if conclusion_id != disease_filter:
                     continue
             
@@ -292,18 +285,28 @@ class StorageService:
         
         return results
     
-    def get_statistics(self) -> Dict[str, Any]:
-        """Dapatkan statistik dari consultation history.
+    def get_statistics(self, history: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Dapatkan statistik dari list consultation history.
         
+        Args:
+            history: List of all consultations.
+            
         Returns:
             Dictionary berisi berbagai statistik
         """
-        history = self.load_consultation_history()
+        if not history:
+            return {
+                "total_consultations": 0,
+                "unique_diseases": 0,
+                "top_diseases": [],
+                "first_consultation_timestamp": None,
+                "last_consultation_timestamp": None,
+            }
         
         # Count by disease
         disease_count: Dict[str, int] = {}
         for consultation in history:
-            disease_id = consultation.get('diagnosis', {}).get('conclusion_id')
+            disease_id = consultation.get('diagnosis', {}).get('conclusion')
             if disease_id:
                 disease_count[disease_id] = disease_count.get(disease_id, 0) + 1
         
@@ -328,12 +331,13 @@ class StorageService:
                 "count": count
             })
         
+        # Timestamps are already sorted descending in load_consultation_history
         return {
             "total_consultations": len(history),
             "unique_diseases": len(disease_count),
             "top_diseases": top_diseases_with_names,
-            "latest_consultation": history[0] if history else None,
-            "timestamp": datetime.now().isoformat()
+            "first_consultation_timestamp": history[-1].get('timestamp') if history else None,
+            "last_consultation_timestamp": history[0].get('timestamp') if history else None,
         }
     
     def export_to_csv(

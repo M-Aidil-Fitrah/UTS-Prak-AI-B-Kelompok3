@@ -25,29 +25,171 @@ import json
 
 
 def _normalize_text(text: str) -> str:
-	"""Normalisasi teks untuk pencarian: lowercase, hapus karakter khusus."""
-	if not text:
-		return ""
-	# Ubah ke lowercase dan ganti underscore/dash dengan spasi
-	text = text.lower().replace("_", " ").replace("-", " ")
-	# Hapus karakter non-alphanumeric kecuali spasi
-	text = re.sub(r"[^a-z0-9\s]", "", text)
-	# Hapus spasi berlebih
-	text = " ".join(text.split())
-	return text
+    """Normalisasi teks untuk pencarian: lowercase, hapus karakter khusus."""
+    if not text:
+        return ""
+    # Ubah ke lowercase dan ganti underscore/dash dengan spasi
+    text = text.lower().replace("_", " ").replace("-", " ")
+    # Hapus karakter non-alphanumeric kecuali spasi
+    text = re.sub(r"[^a-z0-9\s]", "", text)
+    # Hapus spasi berlebih
+    text = " ".join(text.split())
+    return text
 
+
+def _matches_text_obj(item: Any, query: str, fields: List[str]) -> bool:
+    """Cek apakah object cocok dengan query pada field-field tertentu."""
+    if not query:
+        return True
+    
+    normalized_query = _normalize_text(query)
+    for field in fields:
+        value = getattr(item, field, "")
+        if isinstance(value, list):
+            value = " ".join(str(v) for v in value)
+        normalized_value = _normalize_text(str(value))
+        if normalized_query in normalized_value:
+            return True
+    return False
+
+
+def search_symptoms(
+    symptoms: Dict[str, Any],
+    query: Optional[str] = None,
+    species_filter: Optional[List[str]] = None,
+    weight_min: Optional[float] = None,
+    weight_max: Optional[float] = None,
+    sort_by: str = "id",
+    ascending: bool = True
+) -> List[Any]:
+    """Cari dan filter gejala berdasarkan berbagai kriteria. Bekerja dengan objek."""
+    results = []
+    
+    for sid, s_obj in symptoms.items():
+        # Filter berdasarkan query teks
+        if query and not _matches_text_obj(s_obj, query, ["id", "nama", "deskripsi"]):
+            continue
+        
+        # Filter berdasarkan spesies
+        if species_filter:
+            symptom_species = getattr(s_obj, 'species', [])
+            if symptom_species and not any(sp in species_filter for sp in symptom_species):
+                continue
+        
+        # Filter berdasarkan weight/bobot
+        weight = float(getattr(s_obj, 'bobot', 1.0))
+        if weight_min is not None and weight < weight_min:
+            continue
+        if weight_max is not None and weight > weight_max:
+            continue
+        
+        results.append(s_obj)
+    
+    # Sorting
+    if sort_by in ["name", "nama"]:
+        key_fn = lambda x: _normalize_text(getattr(x, 'nama', ''))
+    elif sort_by == "weight":
+        key_fn = lambda x: float(getattr(x, 'bobot', 1.0))
+    else:  # default: sort by id
+        key_fn = lambda x: getattr(x, 'id', '')
+    
+    results.sort(key=key_fn, reverse=not ascending)
+    return results
+
+
+def search_diseases(
+    diseases: Dict[str, Any],
+    query: Optional[str] = None,
+    species_filter: Optional[List[str]] = None,
+    sort_by: str = "id",
+    ascending: bool = True
+) -> List[Any]:
+    """Cari dan filter penyakit berdasarkan berbagai kriteria. Bekerja dengan objek."""
+    results = []
+    
+    for did, d_obj in diseases.items():
+        # Filter berdasarkan query teks (cari di banyak field)
+        search_fields = ["id", "nama", "deskripsi", "penyebab", "pengobatan", "pencegahan"]
+        if query and not _matches_text_obj(d_obj, query, search_fields):
+            continue
+        
+        # Filter berdasarkan spesies (jika ada)
+        if species_filter:
+            disease_species = getattr(d_obj, 'species', [])
+            if disease_species and not any(sp in species_filter for sp in disease_species):
+                continue
+        
+        results.append(d_obj)
+    
+    # Sorting
+    if sort_by in ["name", "nama"]:
+        key_fn = lambda x: _normalize_text(getattr(x, 'nama', ''))
+    else:
+        key_fn = lambda x: getattr(x, 'id', '')
+    
+    results.sort(key=key_fn, reverse=not ascending)
+    return results
+
+
+def search_rules(
+    rules: Dict[str, Any],
+    query: Optional[str] = None,
+    antecedent_filter: Optional[str] = None,
+    consequent_filter: Optional[str] = None,
+    cf_min: Optional[float] = None,
+    cf_max: Optional[float] = None,
+    sort_by: str = "id",
+    ascending: bool = True
+) -> Dict[str, Any]:
+    """Cari dan filter rules berdasarkan berbagai kriteria. Bekerja dengan dictionary."""
+    results = {}
+    
+    for rid, r_dict in rules.items():
+        # Buat salinan untuk dimodifikasi
+        rule_with_id = r_dict.copy()
+        rule_with_id['id'] = rid
+
+        # Filter berdasarkan query teks
+        if query:
+            search_fields = ["id", "ask_why", "recommendation", "source", "THEN"]
+            # Tambahkan antecedent ke pencarian (IF adalah list)
+            if_list = rule_with_id.get("IF", [])
+            rule_with_id["_if_text"] = " ".join(if_list)
+            search_fields.append("_if_text")
+            
+            # Gunakan _matches_text yang asli untuk dictionary
+            if not _matches_text(rule_with_id, query, search_fields):
+                continue
+        
+        # Filter berdasarkan antecedent (IF mengandung item tertentu)
+        if antecedent_filter:
+            antecedents = rule_with_id.get("IF", [])
+            if antecedent_filter not in antecedents:
+                continue
+        
+        # Filter berdasarkan consequent (THEN)
+        if consequent_filter:
+            consequent = rule_with_id.get("THEN", "")
+            if consequent != consequent_filter:
+                continue
+        
+        # Filter berdasarkan CF range
+        cf = float(rule_with_id.get("CF", 1.0))
+        if cf_min is not None and cf < cf_min:
+            continue
+        if cf_max is not None and cf > cf_max:
+            continue
+        
+        results[rid] = r_dict
+    
+    # Sorting
+    # Karena kita mengembalikan dict, sorting lebih rumit.
+    # Untuk saat ini, kita akan mengembalikan dict yang difilter tanpa sorting.
+    # Jika sorting diperlukan, kita harus mengubah return type ke list of tuples atau list of dicts.
+    return results
 
 def _matches_text(item: Dict[str, Any], query: str, fields: List[str]) -> bool:
-	"""Cek apakah item cocok dengan query pada field-field tertentu.
-	
-	Args:
-		item: dictionary yang berisi data (gejala/penyakit/rule)
-		query: kata kunci pencarian
-		fields: daftar nama field yang akan dicari (mis: ['name', 'description', 'id'])
-	
-	Returns:
-		True jika query ditemukan di salah satu field
-	"""
+	"""Cek apakah item cocok dengan query pada field-field tertentu."""
 	if not query:
 		return True
 	
@@ -63,506 +205,207 @@ def _matches_text(item: Dict[str, Any], query: str, fields: List[str]) -> bool:
 	return False
 
 
-def search_symptoms(
-	symptoms: Dict[str, Any],
-	query: Optional[str] = None,
-	species_filter: Optional[List[str]] = None,
-	weight_min: Optional[float] = None,
-	weight_max: Optional[float] = None,
-	sort_by: str = "id",
-	ascending: bool = True
-) -> List[Dict[str, Any]]:
-	"""Cari dan filter gejala berdasarkan berbagai kriteria.
-	
-	Args:
-		symptoms: dictionary {symptom_id: symptom_object}
-		query: kata kunci untuk mencari di nama, deskripsi, atau ID
-		species_filter: list spesies (mis. ["Lele", "Nila"]) - hanya gejala yang terkait
-		weight_min: bobot minimum (CF weight)
-		weight_max: bobot maksimum
-		sort_by: field untuk sorting ('id', 'name', 'weight')
-		ascending: True untuk ascending, False untuk descending
-	
-	Returns:
-		List dictionary hasil filter dan sort
-	"""
-	results = []
-	
-	for sid, s_obj in symptoms.items():
-		# Konversi object ke dict jika perlu
-		if hasattr(s_obj, "model_dump"):
-			s = s_obj.model_dump()
-		elif hasattr(s_obj, "__dict__"):
-			s = dict(s_obj.__dict__)
-		else:
-			s = dict(s_obj) if isinstance(s_obj, dict) else {"id": sid}
-		
-		# Pastikan ID ada
-		if "id" not in s:
-			s["id"] = sid
-		
-		# Filter berdasarkan query teks
-		if query and not _matches_text(s, query, ["id", "name", "nama", "description", "deskripsi"]):
-			continue
-		
-		# Filter berdasarkan spesies
-		if species_filter:
-			symptom_species = s.get("species", [])
-			if isinstance(symptom_species, str):
-				symptom_species = [symptom_species]
-			# Jika symptom tidak punya species (None/empty), lewati filter ini
-			# Jika punya species, cek apakah ada yang cocok dengan filter
-			if symptom_species and not any(sp in species_filter for sp in symptom_species):
-				continue
-		
-		# Filter berdasarkan weight/bobot
-		weight = float(s.get("weight", 1.0))
-		if weight_min is not None and weight < weight_min:
-			continue
-		if weight_max is not None and weight > weight_max:
-			continue
-		
-		results.append(s)
-	
-	# Sorting
-	if sort_by in ["name", "nama"]:
-		key_fn = lambda x: _normalize_text(x.get("name") or x.get("nama") or x.get("id", ""))
-	elif sort_by == "weight":
-		key_fn = lambda x: float(x.get("weight", 1.0))
-	else:  # default: sort by id
-		key_fn = lambda x: x.get("id", "")
-	
-	results.sort(key=key_fn, reverse=not ascending)
-	return results
-
-
-def search_diseases(
-	diseases: Dict[str, Any],
-	query: Optional[str] = None,
-	species_filter: Optional[List[str]] = None,
-	sort_by: str = "id",
-	ascending: bool = True
-) -> List[Dict[str, Any]]:
-	"""Cari dan filter penyakit berdasarkan berbagai kriteria.
-	
-	Args:
-		diseases: dictionary {disease_id: disease_object}
-		query: kata kunci untuk mencari di nama, deskripsi, penyebab, pengobatan, dll
-		species_filter: list spesies (jika disease punya field species)
-		sort_by: field untuk sorting ('id', 'name', 'nama')
-		ascending: True untuk ascending, False untuk descending
-	
-	Returns:
-		List dictionary hasil filter dan sort
-	"""
-	results = []
-	
-	for did, d_obj in diseases.items():
-		# Konversi object ke dict
-		if hasattr(d_obj, "model_dump"):
-			d = d_obj.model_dump()
-		elif hasattr(d_obj, "__dict__"):
-			d = dict(d_obj.__dict__)
-		else:
-			d = dict(d_obj) if isinstance(d_obj, dict) else {"id": did}
-		
-		if "id" not in d:
-			d["id"] = did
-		
-		# Filter berdasarkan query teks (cari di banyak field)
-		search_fields = [
-			"id", "name", "nama", "description", "deskripsi",
-			"penyebab", "pengobatan", "pencegahan", "treatments", "prevention"
-		]
-		if query and not _matches_text(d, query, search_fields):
-			continue
-		
-		# Filter berdasarkan spesies (jika ada)
-		if species_filter:
-			disease_species = d.get("species", [])
-			if isinstance(disease_species, str):
-				disease_species = [disease_species]
-			if disease_species and not any(sp in species_filter for sp in disease_species):
-				continue
-		
-		results.append(d)
-	
-	# Sorting
-	if sort_by in ["name", "nama"]:
-		key_fn = lambda x: _normalize_text(x.get("name") or x.get("nama") or x.get("id", ""))
-	else:
-		key_fn = lambda x: x.get("id", "")
-	
-	results.sort(key=key_fn, reverse=not ascending)
-	return results
-
-
-def search_rules(
-	rules: Dict[str, Dict[str, Any]],
-	query: Optional[str] = None,
-	antecedent_filter: Optional[str] = None,
-	consequent_filter: Optional[str] = None,
-	cf_min: Optional[float] = None,
-	cf_max: Optional[float] = None,
-	sort_by: str = "id",
-	ascending: bool = True
-) -> List[Dict[str, Any]]:
-	"""Cari dan filter rules berdasarkan berbagai kriteria.
-	
-	Args:
-		rules: dictionary {rule_id: rule_dict}
-		query: kata kunci untuk mencari di ID, why, recommendation, source
-		antecedent_filter: hanya rules yang memiliki antecedent ini (mis. "bintik_putih")
-		consequent_filter: hanya rules yang menghasilkan consequent ini (mis. "P1")
-		cf_min: CF minimum
-		cf_max: CF maksimum
-		sort_by: field untuk sorting ('id', 'cf')
-		ascending: True untuk ascending, False untuk descending
-	
-	Returns:
-		List dictionary hasil filter dan sort (setiap dict punya key 'id' dan field rule)
-	"""
-	results = []
-	
-	for rid, r in rules.items():
-		# Konversi object ke dict jika perlu
-		if hasattr(r, "model_dump"):
-			rule_data = r.model_dump()
-		elif hasattr(r, "__dict__"):
-			rule_data = dict(r.__dict__)
-		else:
-			rule_data = dict(r) if isinstance(r, dict) else {}
-		
-		# Tambahkan ID rule jika belum ada
-		rule_with_id = {"id": rid, **rule_data}
-		
-		# Filter berdasarkan query teks
-		if query:
-			search_fields = ["id", "ask_why", "recommendation", "source", "THEN"]
-			# Tambahkan antecedent ke pencarian (IF adalah list)
-			if_list = rule_data.get("IF", [])
-			rule_with_id["_if_text"] = " ".join(if_list)  # bantu field untuk search
-			search_fields.append("_if_text")
-			
-			if not _matches_text(rule_with_id, query, search_fields):
-				continue
-		
-		# Filter berdasarkan antecedent (IF mengandung item tertentu)
-		if antecedent_filter:
-			antecedents = rule_data.get("IF", [])
-			if antecedent_filter not in antecedents:
-				continue
-		
-		# Filter berdasarkan consequent (THEN)
-		if consequent_filter:
-			consequent = rule_data.get("THEN", "")
-			if consequent != consequent_filter:
-				continue
-		
-		# Filter berdasarkan CF range
-		cf = float(rule_data.get("CF", 1.0))
-		if cf_min is not None and cf < cf_min:
-			continue
-		if cf_max is not None and cf > cf_max:
-			continue
-		
-		results.append(rule_with_id)
-	
-	# Sorting
-	if sort_by == "cf":
-		key_fn = lambda x: float(x.get("CF", 1.0))
-	else:
-		key_fn = lambda x: x.get("id", "")
-	
-	results.sort(key=key_fn, reverse=not ascending)
-	return results
-
-
 def filter_by_species(
-	items: List[Dict[str, Any]],
-	species_list: List[str]
-) -> List[Dict[str, Any]]:
-	"""Filter generik berdasarkan spesies.
-	
-	Helper function untuk memfilter list item (gejala/penyakit) berdasarkan spesies.
-	Item yang tidak punya field 'species' akan tetap disertakan (dianggap umum).
-	
-	Args:
-		items: list dictionary yang mungkin punya field 'species'
-		species_list: list spesies yang ingin difilter (mis. ["Lele", "Nila"])
-	
-	Returns:
-		List item yang cocok dengan filter atau tidak punya species (umum)
-	"""
-	if not species_list:
-		return items
-	
-	filtered = []
-	for item in items:
-		item_species = item.get("species", [])
-		if isinstance(item_species, str):
-			item_species = [item_species]
-		
-		# Jika item tidak punya species, dianggap umum untuk semua spesies
-		if not item_species:
-			filtered.append(item)
-			continue
-		
-		# Jika ada species yang cocok dengan filter, masukkan
-		if any(sp in species_list for sp in item_species):
-			filtered.append(item)
-	
-	return filtered
+    items: List[Any],
+    species_list: List[str]
+) -> List[Any]:
+    """Filter generik berdasarkan spesies untuk list of objects."""
+    if not species_list:
+        return items
+    
+    filtered = []
+    for item in items:
+        item_species = getattr(item, 'species', [])
+        if not item_species:
+            filtered.append(item)
+            continue
+        if any(sp in species_list for sp in item_species):
+            filtered.append(item)
+    
+    return filtered
 
 
 def get_rules_by_disease(
-	rules: Dict[str, Dict[str, Any]],
-	disease_id: str
-) -> List[Dict[str, Any]]:
-	"""Dapatkan semua rules yang menghasilkan penyakit tertentu.
-	
-	Args:
-		rules: dictionary rules
-		disease_id: ID penyakit yang dicari
-	
-	Returns:
-		List rules yang THEN-nya adalah disease_id tersebut
-	"""
-	return search_rules(rules, consequent_filter=disease_id)
+    rules: Dict[str, Dict[str, Any]],
+    disease_id: str
+) -> Dict[str, Any]:
+    """Dapatkan semua rules yang menghasilkan penyakit tertentu."""
+    return search_rules(rules, consequent_filter=disease_id)
 
 
 def get_rules_by_symptom(
-	rules: Dict[str, Dict[str, Any]],
-	symptom_id: str
-) -> List[Dict[str, Any]]:
-	"""Dapatkan semua rules yang menggunakan gejala tertentu.
-	
-	Args:
-		rules: dictionary rules
-		symptom_id: ID gejala yang dicari
-	
-	Returns:
-		List rules yang IF-nya mengandung symptom_id tersebut
-	"""
-	return search_rules(rules, antecedent_filter=symptom_id)
+    rules: Dict[str, Dict[str, Any]],
+    symptom_id: str
+) -> Dict[str, Any]:
+    """Dapatkan semua rules yang menggunakan gejala tertentu."""
+    return search_rules(rules, antecedent_filter=symptom_id)
 
 
 def get_related_symptoms(
-	rules: Dict[str, Dict[str, Any]],
-	symptom_id: str
+    rules: Dict[str, Dict[str, Any]],
+    symptom_id: str
 ) -> List[str]:
-	"""Dapatkan gejala-gejala lain yang sering muncul bersama gejala tertentu.
-	
-	Berguna untuk rekomendasi "gejala terkait" di UI.
-	
-	Args:
-		rules: dictionary rules
-		symptom_id: ID gejala yang dicari
-	
-	Returns:
-		List ID gejala lain yang muncul dalam rules yang sama
-	"""
-	related = set()
-	for rid, r in rules.items():
-		antecedents = r.get("IF", [])
-		if symptom_id in antecedents:
-			# Tambahkan gejala lain dari rule ini
-			for ant in antecedents:
-				if ant != symptom_id:
-					related.add(ant)
-	return sorted(list(related))
+    """Dapatkan gejala-gejala lain yang sering muncul bersama gejala tertentu."""
+    related = set()
+    for rid, r in rules.items():
+        antecedents = getattr(r, 'IF', [])
+        if symptom_id in antecedents:
+            for ant in antecedents:
+                if ant != symptom_id:
+                    related.add(ant)
+    return sorted(list(related))
 
 
 def get_possible_diseases(
-	rules: Dict[str, Dict[str, Any]],
-	symptom_ids: List[str]
+    rules: Dict[str, Dict[str, Any]],
+    symptom_ids: List[str]
 ) -> List[str]:
-	"""Dapatkan daftar penyakit yang mungkin berdasarkan gejala yang dipilih.
-	
-	Berguna untuk preview atau hints sebelum menjalankan inferensi penuh.
-	
-	Args:
-		rules: dictionary rules
-		symptom_ids: list ID gejala yang sudah dipilih user
-	
-	Returns:
-		List ID penyakit yang mungkin (consequent dari rules yang antecedent-nya cocok)
-	"""
-	possible = set()
-	symptom_set = set(symptom_ids)
-	
-	for rid, r in rules.items():
-		antecedents = set(r.get("IF", []))
-		# Jika ada intersection (sebagian antecedent terpenuhi), tambahkan consequent
-		if antecedents & symptom_set:  # ada irisan
-			consequent = r.get("THEN")
-			if consequent:
-				possible.add(consequent)
-	
-	return sorted(list(possible))
+    """Dapatkan daftar penyakit yang mungkin berdasarkan gejala yang dipilih."""
+    possible = set()
+    symptom_set = set(symptom_ids)
+    
+    for rid, r in rules.items():
+        antecedents = set(getattr(r, 'IF', []))
+        if antecedents & symptom_set:
+            consequent = getattr(r, 'THEN', None)
+            if consequent:
+                possible.add(consequent)
+    
+    return sorted(list(possible))
 
 
 def highlight_search_term(text: str, query: str) -> str:
-	"""Highlight query di dalam text untuk tampilan UI (gunakan markdown bold).
-	
-	Args:
-		text: teks asli
-		query: kata kunci yang ingin di-highlight
-	
-	Returns:
-		Text dengan query yang di-bold menggunakan markdown **...**
-	"""
-	if not query or not text:
-		return text
-	
-	# Case-insensitive replace dengan bold markdown
-	pattern = re.compile(re.escape(query), re.IGNORECASE)
-	return pattern.sub(lambda m: f"**{m.group(0)}**", text)
+    """Highlight query di dalam text untuk tampilan UI (gunakan markdown bold)."""
+    if not query or not text:
+        return text
+    
+    pattern = re.compile(re.escape(query), re.IGNORECASE)
+    return pattern.sub(lambda m: f"**{m.group(0)}**", text)
 
 
 # ========== CLASS-BASED API (INTEGRATED WITH DATABASE) ==========
 
 class SearchFilter:
-	"""Class wrapper untuk search & filter dengan integrasi database_manager.
-	
-	Menyediakan interface yang lebih mudah untuk Pages layer.
-	Menggunakan fungsi-fungsi database_manager untuk akses data.
-	"""
-	
-	def __init__(self):
-		"""Initialize SearchFilter dengan akses ke database."""
-		import sys
-		import os
-		sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-		
-		# Import database functions
-		from database.database_manager import load_rules
-		self.load_rules = load_rules
-		
-		# Load JSON files untuk symptoms dan diseases
-		import json
-		base_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database")
-		
-		self.symptoms_path = os.path.join(base_path, "symptoms.json")
-		self.diseases_path = os.path.join(base_path, "diseases.json")
-	
-	def _load_json(self, file_path: str) -> Dict[str, Any]:
-		"""Load JSON file helper."""
-		import json
-		if not os.path.exists(file_path):
-			return {}
-		with open(file_path, 'r', encoding='utf-8') as f:
-			return json.load(f)
-	
-	def search_symptoms(
-		self,
-		query: Optional[str] = None,
-		species_filter: Optional[List[str]] = None,
-		weight_min: Optional[float] = None,
-		weight_max: Optional[float] = None,
-		sort_by: str = "id",
-		ascending: bool = True
-	) -> List[Dict[str, Any]]:
-		"""Cari symptoms dengan akses langsung ke database."""
-		symptoms = self._load_json(self.symptoms_path)
-		return search_symptoms(
-			symptoms, query, species_filter, 
-			weight_min, weight_max, sort_by, ascending
-		)
-	
-	def search_diseases(
-		self,
-		query: Optional[str] = None,
-		species_filter: Optional[List[str]] = None,
-		sort_by: str = "id",
-		ascending: bool = True
-	) -> List[Dict[str, Any]]:
-		"""Cari diseases dengan akses langsung ke database."""
-		diseases = self._load_json(self.diseases_path)
-		return search_diseases(diseases, query, species_filter, sort_by, ascending)
-	
-	def search_rules(
-		self,
-		query: Optional[str] = None,
-		antecedent_filter: Optional[str] = None,
-		consequent_filter: Optional[str] = None,
-		cf_min: Optional[float] = None,
-		cf_max: Optional[float] = None,
-		sort_by: str = "id",
-		ascending: bool = True
-	) -> List[Dict[str, Any]]:
-		"""Cari rules dengan akses langsung ke database."""
-		rules = self.load_rules()
-		return search_rules(
-			rules, query, antecedent_filter, consequent_filter,
-			cf_min, cf_max, sort_by, ascending
-		)
-	
-	def get_rules_by_disease(self, disease_id: str) -> List[Dict[str, Any]]:
-		"""Dapatkan rules yang menghasilkan penyakit tertentu."""
-		rules = self.load_rules()
-		return get_rules_by_disease(rules, disease_id)
-	
-	def get_rules_by_symptom(self, symptom_id: str) -> List[Dict[str, Any]]:
-		"""Dapatkan rules yang menggunakan gejala tertentu."""
-		rules = self.load_rules()
-		return get_rules_by_symptom(rules, symptom_id)
-	
-	def get_related_symptoms(self, symptom_id: str) -> List[str]:
-		"""Dapatkan gejala-gejala terkait."""
-		rules = self.load_rules()
-		return get_related_symptoms(rules, symptom_id)
-	
-	def get_possible_diseases(self, symptom_ids: List[str]) -> List[str]:
-		"""Dapatkan daftar penyakit yang mungkin berdasarkan gejala."""
-		rules = self.load_rules()
-		return get_possible_diseases(rules, symptom_ids)
-	
-	def get_all_symptoms(self) -> Dict[str, Any]:
-		"""Load semua symptoms dari database."""
-		return self._load_json(self.symptoms_path)
-	
-	def get_all_diseases(self) -> Dict[str, Any]:
-		"""Load semua diseases dari database."""
-		return self._load_json(self.diseases_path)
-	
-	def get_all_rules(self) -> Dict[str, Any]:
-		"""Load semua rules dari database."""
-		return self.load_rules()
+    """Class wrapper untuk search & filter dengan integrasi database_manager.
+    
+    Menyediakan interface yang lebih mudah untuk Pages layer.
+    Menggunakan fungsi-fungsi database_manager untuk akses data.
+    """
+    
+    def __init__(self):
+        """Initialize SearchFilter dengan akses ke database."""
+        import sys
+        import os
+        # Pastikan path ke 'app' ada di sys.path
+        sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        
+        from database.database_manager import DatabaseManager
+        from pathlib import Path
+
+        # Inisialisasi DatabaseManager untuk memuat semua data secara konsisten
+        db_path = Path(__file__).parent.parent / "database"
+        self.db = DatabaseManager(db_path)
+        self.db.load_all()
+
+    def search_symptoms(
+        self,
+        query: Optional[str] = None,
+        species_filter: Optional[List[str]] = None,
+        weight_min: Optional[float] = None,
+        weight_max: Optional[float] = None,
+        sort_by: str = "id",
+        ascending: bool = True
+    ) -> List[Any]:
+        """Cari symptoms dengan akses langsung ke database."""
+        symptoms = self.db.symptoms
+        return search_symptoms(
+            symptoms, query, species_filter, 
+            weight_min, weight_max, sort_by, ascending
+        )
+    
+    def search_diseases(
+        self,
+        query: Optional[str] = None,
+        species_filter: Optional[List[str]] = None,
+        sort_by: str = "id",
+        ascending: bool = True
+    ) -> List[Any]:
+        """Cari diseases dengan akses langsung ke database."""
+        diseases = self.db.diseases
+        return search_diseases(diseases, query, species_filter, sort_by, ascending)
+    
+    def search_rules(
+        self,
+        query: Optional[str] = None,
+        antecedent_filter: Optional[str] = None,
+        consequent_filter: Optional[str] = None,
+        cf_min: Optional[float] = None,
+        cf_max: Optional[float] = None,
+        sort_by: str = "id",
+        ascending: bool = True
+    ) -> Dict[str, Any]:
+        """Cari rules dengan akses langsung ke database."""
+        rules = self.db.rules
+        return search_rules(
+            rules, query, antecedent_filter, consequent_filter,
+            cf_min, cf_max, sort_by, ascending
+        )
+    
+    def get_rules_by_disease(self, disease_id: str) -> Dict[str, Any]:
+        """Dapatkan rules yang menghasilkan penyakit tertentu."""
+        rules = self.db.rules
+        return get_rules_by_disease(rules, disease_id)
+    
+    def get_rules_by_symptom(self, symptom_id: str) -> Dict[str, Any]:
+        """Dapatkan rules yang menggunakan gejala tertentu."""
+        rules = self.db.rules
+        return get_rules_by_symptom(rules, symptom_id)
+    
+    def get_related_symptoms(self, symptom_id: str) -> List[str]:
+        """Dapatkan gejala-gejala terkait."""
+        rules = self.db.rules
+        return get_related_symptoms(rules, symptom_id)
+    
+    def get_possible_diseases(self, symptom_ids: List[str]) -> List[str]:
+        """Dapatkan daftar penyakit yang mungkin berdasarkan gejala."""
+        rules = self.db.rules
+        return get_possible_diseases(rules, symptom_ids)
+    
+    def get_all_symptoms(self) -> Dict[str, Any]:
+        """Load semua symptoms dari database."""
+        return self.db.symptoms
+    
+    def get_all_diseases(self) -> Dict[str, Any]:
+        """Load semua diseases dari database."""
+        return self.db.diseases
+    
+    def get_all_rules(self) -> Dict[str, Any]:
+        """Load semua rules dari database."""
+        return self.db.rules
 
 
 # ===== Contoh penggunaan (untuk testing) =====
 if __name__ == "__main__":
-	# Contoh data dummy
-	dummy_symptoms = {
-		"G1": {"id": "G1", "name": "Bintik Putih", "description": "Bintik putih di tubuh", "weight": 1.0, "species": ["Lele", "Nila"]},
-		"G2": {"id": "G2", "name": "Nafsu Makan Turun", "description": "Ikan tidak mau makan", "weight": 0.9, "species": []},
-		"G3": {"id": "G3", "name": "Insang Pucat", "description": "Warna insang tidak normal", "weight": 0.95, "species": ["Nila", "Gurame"]},
-	}
-	
-	dummy_rules = {
-		"R1": {"IF": ["G1", "G2"], "THEN": "P1", "CF": 0.8, "ask_why": "Bintik putih khas Ich"},
-		"R2": {"IF": ["G2", "G3"], "THEN": "P2", "CF": 0.7},
-		"R3": {"IF": ["G1"], "THEN": "P1", "CF": 0.6},
-	}
-	
-	# Test search symptoms
-	print("=== Test Search Symptoms ===")
-	hasil = search_symptoms(dummy_symptoms, query="putih", species_filter=["Lele"])
-	print(f"Hasil pencarian 'putih' untuk Lele: {len(hasil)} item")
-	for h in hasil:
-		print(f"  - {h['id']}: {h['name']}")
-	
-	# Test search rules by symptom
-	print("\n=== Test Get Rules by Symptom ===")
-	rules_g1 = get_rules_by_symptom(dummy_rules, "G1")
-	print(f"Rules yang menggunakan G1: {len(rules_g1)} rules")
-	for r in rules_g1:
-		print(f"  - {r['id']}: IF {r['IF']} THEN {r['THEN']}")
-	
-	# Test get possible diseases
-	print("\n=== Test Get Possible Diseases ===")
-	diseases = get_possible_diseases(dummy_rules, ["G1", "G2"])
-	print(f"Penyakit yang mungkin dari G1+G2: {diseases}")
-	
-	print("\n✅ Semua test search_filter.py berjalan sukses!")
+    # Inisialisasi SearchFilter untuk testing
+    sf = SearchFilter()
+    
+    # Test search symptoms
+    print("=== Test Search Symptoms ===")
+    hasil_symptoms = sf.search_symptoms(query="putih", species_filter=["Lele"])
+    print(f"Hasil pencarian 'putih' untuk Lele: {len(hasil_symptoms)} item")
+    for h in hasil_symptoms:
+        print(f"  - {h.id}: {h.name}")
+    
+    # Test search rules by symptom
+    print("\n=== Test Get Rules by Symptom ===")
+    rules_g1 = sf.get_rules_by_symptom("G1")
+    print(f"Rules yang menggunakan G1: {len(rules_g1)} rules")
+    for r in rules_g1:
+        print(f"  - {r.id}: IF {r.IF} THEN {r.THEN}")
+    
+    # Test get possible diseases
+    print("\n=== Test Get Possible Diseases ===")
+    diseases = sf.get_possible_diseases(["G1", "G2"])
+    print(f"Penyakit yang mungkin dari G1+G2: {diseases}")
+    
+    print("\n✅ Semua test search_filter.py berjalan sukses!")
