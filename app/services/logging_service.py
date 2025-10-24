@@ -110,7 +110,15 @@ class LoggingService:
     def _get_disease_by_id(self, disease_id: str) -> Optional[Dict[str, Any]]:
         """Ambil detail disease dari database."""
         diseases = self._load_json(self.diseases_path)
-        return diseases.get(disease_id)
+        # Cek apakah diseases adalah list atau dict untuk kompatibilitas
+        if isinstance(diseases, dict):
+            return diseases.get(disease_id)
+        elif isinstance(diseases, list):
+            # Jika ini adalah daftar, cari secara manual
+            for disease in diseases:
+                if disease.get("id") == disease_id:
+                    return disease
+        return None
     
     def log_diagnosis(
         self,
