@@ -89,6 +89,8 @@ def reset_diagnosis_state():
     st.session_state.alternatives_data = None
     st.session_state.user_cf = 0.8 # Reset to default
     st.session_state.result_saved = False # Reset save status
+    st.session_state.questions_queue = [] # Reset antrian pertanyaan
+    st.session_state.asked_symptoms = set() # Reset gejala yang sudah ditanya
 
 # --- Main App Logic ---
 def run():
@@ -113,6 +115,10 @@ def run():
         st.session_state.alternatives_data = None
     if 'user_cf' not in st.session_state:
         st.session_state.user_cf = 0.8
+    if 'questions_queue' not in st.session_state:
+        st.session_state.questions_queue = []
+    if 'asked_symptoms' not in st.session_state:
+        st.session_state.asked_symptoms = set() # Lacak gejala yang sudah ditanya
 
     # --- Sidebar ---
     debug_mode = False
@@ -163,6 +169,9 @@ def run():
             if disease_info.get("pencegahan"):
                 with st.expander("🛡️ Pencegahan"):
                     st.write(disease_info["pencegahan"])
+
+            # Menambahkan expander untuk jejak penalaran
+            trace_expander(result)
             
             # Tombol untuk reset
             if st.button("🔄 Diagnosis Baru", use_container_width=True):
@@ -170,40 +179,78 @@ def run():
                 st.rerun()
 
         elif status == "NEEDS_MORE_INFO":
-            st.info("💡 **Sistem menemukan kemungkinan penyakit yang hampir cocok. Mari periksa gejala tambahan:**")
             suggestions = result.get("suggestions", [])
-            if suggestions:
-                top_suggestion = suggestions[0]
-                symptom_to_ask = top_suggestion['missing_symptom_names'][0]
-                symptom_id_to_add = top_suggestion['missing_symptom_ids'][0]
+            
+            # Isi antrian jika kosong, dan pastikan tidak menanyakan gejala yang sama
+            if not st.session_state.questions_queue and suggestions:
+                all_missing = []
+                for sug in suggestions:
+                    for sid, sname in zip(sug['missing_symptom_ids'], sug['missing_symptom_names']):
+                        if sid not in st.session_state.asked_symptoms:
+                            # Simpan juga info penyakit terkait untuk konteks
+                            all_missing.append({
+                                "s_id": sid, 
+                                "s_name": sname, 
+                                "d_name": sug['disease_name'],
+                                "d_percent": sug['percentage']
+                            })
+                # Hapus duplikat
+                unique_missing = list({q['s_id']: q for q in all_missing}.values())
+                st.session_state.questions_queue = unique_missing
 
-                st.write(f"**Kemungkinan penyakit:** {top_suggestion['disease_name']} ({top_suggestion['percentage']:.0f}% cocok)")
-                st.write(f"**Apakah ikan mengalami: {symptom_to_ask}?**")
+            if st.session_state.questions_queue:
+                # Ambil pertanyaan berikutnya dari antrian
+                question = st.session_state.questions_queue[0]
+                symptom_id_to_add = question['s_id']
+                symptom_to_ask = question['s_name']
+                
+                st.info(f"💡 **Sistem mencurigai penyakit: {question['d_name']}** ({question['d_percent']:.0f}% cocok).")
+                st.write(f"Untuk memastikannya, apakah ikan juga mengalami gejala berikut?")
+                st.subheader(f"➡️ {symptom_to_ask}")
 
                 col1, col2 = st.columns(2)
                 with col1:
-                    if st.button("✅ Ya", use_container_width=True):
-                        new_symptoms = st.session_state.initial_symptoms + [symptom_id_to_add]
-                        st.session_state.initial_symptoms = new_symptoms
+                    if st.button("✅ Ya, Benar", use_container_width=True):
+                        st.session_state.initial_symptoms.append(symptom_id_to_add)
+                        st.session_state.asked_symptoms.add(symptom_id_to_add)
+                        st.session_state.questions_queue = [] # Kosongkan antrian untuk evaluasi ulang
                         
-                        # Trigger re-diagnosis
-                        with st.spinner("Menjalankan diagnosis ulang..."):
-                            new_result = engine.diagnose(symptom_ids=new_symptoms, user_cf=st.session_state.user_cf, kb=db)
+                        with st.spinner("Menganalisis ulang dengan gejala baru..."):
+                            new_result = engine.diagnose(
+                                symptom_ids=st.session_state.initial_symptoms, 
+                                user_cf=st.session_state.user_cf, 
+                                kb=db
+                            )
                             st.session_state.diagnosis_result = new_result
                             st.rerun()
                 with col2:
-                    if st.button("❌ Tidak", use_container_width=True):
-                        # Save before showing alternatives
-                        save_current_diagnosis(storage, logger)
-                        st.session_state.show_alternatives = True
-                        st.session_state.alternatives_data = suggestions
-                        st.session_state.diagnosis_result = None # Clear result to show alternatives
+                    if st.button("❌ Tidak, Gejala ini tidak ada", use_container_width=True):
+                        st.session_state.asked_symptoms.add(symptom_id_to_add)
+                        st.session_state.questions_queue.pop(0)
+                        
+                        if not st.session_state.questions_queue:
+                            save_current_diagnosis(storage, logger)
+                            st.session_state.show_alternatives = True
+                            st.session_state.alternatives_data = suggestions
+                            st.session_state.diagnosis_result = None
+                        
                         st.rerun()
+            else:
+                # Jika tidak ada saran atau antrian habis, anggap inkonklusif
+                save_current_diagnosis(storage, logger)
+                st.warning("⚠️ Tidak ada gejala tambahan relevan yang bisa ditanyakan.")
+                if st.button("🔄 Coba Lagi", use_container_width=True):
+                    reset_diagnosis_state()
+                    st.rerun()
 
         elif status == "INCONCLUSIVE":
             save_current_diagnosis(storage, logger)
             st.warning(f"⚠️ Tidak ditemukan diagnosis yang cukup yakin. CF tertinggi: {result.get('cf', 0.0):.1%}")
             st.info("💡 Coba tambahkan gejala lain atau tingkatkan tingkat keyakinan.")
+            
+            # Menambahkan expander untuk jejak penalaran
+            trace_expander(result)
+
             if st.button("🔄 Coba Lagi", use_container_width=True):
                 reset_diagnosis_state()
                 st.rerun()

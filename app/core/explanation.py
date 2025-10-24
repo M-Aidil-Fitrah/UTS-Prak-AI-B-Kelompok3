@@ -1,5 +1,3 @@
-
-
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 
@@ -198,6 +196,116 @@ Tingkat Kepercayaan Akhir: **{final_cf*100:.1f}%**
         
         return explanation
     
+    # ============== DATA PRESENTATION HELPERS (PINDAHAN DARI INFERENCE ENGINE) ==============
+
+    def get_rules_details(
+        self,
+        rule_ids: List[str]
+    ) -> List[Dict[str, Any]]:
+        """Get detailed info for list of rules."""
+        symptoms = getattr(self.kb, "symptoms", {})
+        unique_rule_ids = list(dict.fromkeys(rule_ids))
+        
+        rule_details = []
+        for rid in unique_rule_ids:
+            rule = self.rules.get(rid)
+            if not rule:
+                continue
+            
+            antecedents = rule.get('IF', [])
+            consequent = rule.get('THEN', '')
+            cf = rule.get('CF', 1.0)
+            
+            antecedent_names = [
+                getattr(symptoms.get(sid), 'nama', sid) for sid in antecedents
+            ]
+            
+            rule_details.append({
+                "id": rid,
+                "if": antecedents,
+                "if_names": antecedent_names,
+                "then": consequent,
+                "cf": cf
+            })
+        
+        return rule_details
+
+    def get_symptom_details(
+        self,
+        symptom_ids: List[str]
+    ) -> List[Dict[str, str]]:
+        """Get detailed info for list of symptoms."""
+        symptoms = getattr(self.kb, "symptoms", {})
+        symptom_details = []
+        
+        for sid in symptom_ids:
+            symptom_obj = symptoms.get(sid)
+            symptom_name = getattr(symptom_obj, 'nama', sid) if symptom_obj else sid
+            symptom_details.append({
+                "id": sid,
+                "nama": symptom_name
+            })
+        
+        return symptom_details
+
+    def get_suggestions(
+        self,
+        symptom_ids: List[str]
+    ) -> List[Dict[str, Any]]:
+        """Dapatkan suggestions untuk gejala yang hampir cocok (partial matching)."""
+        suggestions = []
+        selected_set = set(symptom_ids)
+        
+        symptoms = getattr(self.kb, "symptoms", {})
+        diseases = getattr(self.kb, "diseases", {})
+        
+        disease_candidates = {}
+
+        for rid, rule in self.rules.items():
+            required_symptoms = rule.get('IF', [])
+            disease_id = rule.get('THEN')
+            
+            if not required_symptoms or not disease_id or disease_id not in diseases:
+                continue
+            
+            required_set = set(required_symptoms)
+            matched = selected_set.intersection(required_set)
+            missing = required_set - selected_set
+            
+            if len(matched) > 0 and len(missing) > 0:
+                if disease_id not in disease_candidates:
+                    disease_candidates[disease_id] = {
+                        "matched_symptoms": set(),
+                        "missing_symptoms": set(),
+                        "required_symptoms": set()
+                    }
+                
+                disease_candidates[disease_id]["matched_symptoms"].update(matched)
+                disease_candidates[disease_id]["missing_symptoms"].update(missing)
+                disease_candidates[disease_id]["required_symptoms"].update(required_set)
+
+        for disease_id, data in disease_candidates.items():
+            d_obj = diseases.get(disease_id)
+            disease_name = getattr(d_obj, "nama", disease_id)
+            
+            missing_details = self.get_symptom_details(list(data["missing_symptoms"]))
+            
+            total_required = len(data["required_symptoms"])
+            matched_count = len(data["matched_symptoms"])
+            
+            suggestions.append({
+                'disease_id': disease_id,
+                'disease_name': disease_name,
+                'matched_count': matched_count,
+                'total_required': total_required,
+                'percentage': (matched_count / total_required * 100) if total_required > 0 else 0,
+                'missing_symptom_ids': [s['id'] for s in missing_details],
+                'missing_symptom_names': [s['nama'] for s in missing_details],
+            })
+
+        suggestions.sort(key=lambda x: x['percentage'], reverse=True)
+        return suggestions
+
     # ============== HELPER METHODS ==============
     
     def _format_antecedents(self, antecedents: List[str]) -> str:

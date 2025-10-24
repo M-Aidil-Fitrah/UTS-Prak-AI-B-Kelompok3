@@ -77,31 +77,46 @@ class InferenceEngine:
         rules: Dict[str, Dict[str, Any]], 
         limit: Optional[int]
     ) -> List[str]:
-        """Loop inferensi (EXTRACTED METHOD).
+        """Loop inferensi (REWRITTEN).
         
-        Memisahkan loop logic dari public API.
+        Logika ini ditulis ulang sepenuhnya untuk memastikan setiap aturan hanya
+        dieksekusi MAKSIMAL SATU KALI, mencegah loop tak terbatas dan jejak
+        penalaran yang berulang.
         """
-        used_rules = []
-        fired = True
-        step_no = 0
-        max_steps = limit if limit is not None else max(50, len(rules) * 3)
+        used_rules_in_trace = []
+        fired_rules_ever = set()  # Set untuk melacak semua aturan yang pernah dieksekusi.
         
-        while fired and step_no < max_steps:
-            fired = False
+        while True: # Loop akan berhenti secara internal.
+            newly_fired_rules_this_pass = []
             
+            # Iterasi hanya pada aturan yang BELUM PERNAH dieksekusi.
             for rid, rule in rules.items():
-                # Check if rule can fire
-                if not self._can_fire_rule(rule):
+                if rid in fired_rules_ever:
                     continue
                 
-                # Fire rule
-                fired_data = self._fire_rule(rid, rule, step_no + 1)
-                if fired_data:
-                    fired = True
-                    step_no += 1
-                    used_rules.append(rid)
-        
-        return used_rules
+                # Jika aturan bisa dieksekusi, tembak dan catat.
+                if self._can_fire_rule(rule):
+                    step_no = len(used_rules_in_trace) + 1
+                    fired_data = self._fire_rule(rid, rule, step_no)
+                    
+                    if fired_data:
+                        newly_fired_rules_this_pass.append(rid)
+            
+            # Jika tidak ada aturan baru yang dieksekusi dalam satu putaran penuh,
+            # berarti proses inferensi selesai.
+            if not newly_fired_rules_this_pass:
+                break # Keluar dari loop while True.
+            
+            # Tambahkan aturan yang baru dieksekusi ke catatan utama.
+            for rid in newly_fired_rules_this_pass:
+                used_rules_in_trace.append(rid)
+                fired_rules_ever.add(rid)
+                
+            # Pengaman jika terjadi loop yang tidak terduga.
+            if len(used_rules_in_trace) >= (limit or 100):
+                break
+                
+        return used_rules_in_trace
     
     def _can_fire_rule(self, rule: Dict[str, Any]) -> bool:
         """Check apakah rule bisa ditembakkan."""
@@ -337,171 +352,6 @@ class InferenceEngine:
                 "trace": [],
             }
     
-    def get_rules_details(
-        self,
-        rule_ids: List[str],
-        kb: Any
-    ) -> List[Dict[str, Any]]:
-        """Get detailed info for list of rules.
-        
-        Args:
-            rule_ids: List of rule IDs
-            kb: Knowledge base object
-            
-        Returns:
-            List of rule details with full information
-        """
-        rules = getattr(kb, "rules", {})
-        symptoms = getattr(kb, "symptoms", {})
-        
-        # Remove duplicates while preserving order
-        unique_rule_ids = list(dict.fromkeys(rule_ids))
-        
-        rule_details = []
-        for rid in unique_rule_ids:
-            rule = rules.get(rid)
-            if not rule:
-                continue
-            
-            if isinstance(rule, dict):
-                antecedents = rule.get('IF', [])
-                consequent = rule.get('THEN', '')
-                cf = rule.get('CF', 1.0)
-            else:
-                antecedents = getattr(rule, 'IF', [])
-                consequent = getattr(rule, 'THEN', '')
-                cf = getattr(rule, 'CF', 1.0)
-            
-            # Get symptom names for antecedents
-            antecedent_names = []
-            for sid in antecedents:
-                symptom_obj = symptoms.get(sid)
-                if isinstance(symptom_obj, dict):
-                    symptom_name = symptom_obj.get('nama', symptom_obj.get('name', sid))
-                else:
-                    symptom_name = getattr(symptom_obj, 'nama', sid) if symptom_obj else sid
-                antecedent_names.append(symptom_name)
-            
-            rule_details.append({
-                "id": rid,
-                "if": antecedents,
-                "if_names": antecedent_names,
-                "then": consequent,
-                "cf": cf
-            })
-        
-        return rule_details
-    
-    def get_symptom_details(
-        self,
-        symptom_ids: List[str],
-        kb: Any
-    ) -> List[Dict[str, str]]:
-        """Get detailed info for list of symptoms.
-        
-        Args:
-            symptom_ids: List of symptom IDs
-            kb: Knowledge base object
-            
-        Returns:
-            List of symptom details with id and nama
-        """
-        symptoms = getattr(kb, "symptoms", {})
-        symptom_details = []
-        
-        for sid in symptom_ids:
-            symptom_obj = symptoms.get(sid)
-            if isinstance(symptom_obj, dict):
-                symptom_name = symptom_obj.get('nama', symptom_obj.get('name', sid))
-            else:
-                symptom_name = getattr(symptom_obj, 'nama', sid) if symptom_obj else sid
-            
-            symptom_details.append({
-                "id": sid,
-                "nama": symptom_name
-            })
-        
-        return symptom_details
-    
-    def get_suggestions(
-        self,
-        symptom_ids: List[str],
-        kb: Any
-    ) -> List[Dict[str, Any]]:
-        """Dapatkan suggestions untuk gejala yang hampir cocok (partial matching).
-        
-        Args:
-            symptom_ids: List of symptom IDs selected by user
-            kb: Knowledge base object
-            
-        Returns:
-            List of suggestions, each containing:
-            - disease_id: Disease ID
-            - disease_name: Disease name
-            - matched_count: Number of matched symptoms
-            - total_required: Total symptoms required
-            - percentage: Match percentage
-            - missing_symptom_ids: List of missing symptom IDs
-            - missing_symptom_names: List of missing symptom names
-        """
-        suggestions = []
-        selected_set = set(symptom_ids)
-        
-        rules = getattr(kb, "rules", {})
-        symptoms = getattr(kb, "symptoms", {})
-        diseases = getattr(kb, "diseases", {})
-        
-        for rid, rule in rules.items():
-            if isinstance(rule, dict):
-                required_symptoms = rule.get('IF', [])
-                disease_id = rule.get('THEN')
-            else:
-                required_symptoms = getattr(rule, 'IF', [])
-                disease_id = getattr(rule, 'THEN', None)
-            
-            if not required_symptoms or not disease_id:
-                continue
-            
-            required_set = set(required_symptoms)
-            matched = selected_set.intersection(required_set)
-            missing = required_set - selected_set
-            
-            # Hanya tampilkan jika ada kecocokan parsial
-            if len(matched) > 0 and len(missing) > 0:
-                # Get disease name
-                disease_obj = diseases.get(disease_id)
-                if isinstance(disease_obj, dict):
-                    disease_name = disease_obj.get('nama', disease_obj.get('name', disease_id))
-                else:
-                    disease_name = getattr(disease_obj, 'nama', disease_id) if disease_obj else disease_id
-                
-                # Get missing symptom names
-                missing_names = []
-                for sid in missing:
-                    symptom_obj = symptoms.get(sid)
-                    if isinstance(symptom_obj, dict):
-                        symptom_name = symptom_obj.get('nama', symptom_obj.get('name', sid))
-                    else:
-                        symptom_name = getattr(symptom_obj, 'nama', sid) if symptom_obj else sid
-                    missing_names.append(symptom_name)
-                
-                suggestions.append({
-                    'disease_id': disease_id,
-                    'disease_name': disease_name,
-                    'matched_count': len(matched),
-                    'total_required': len(required_set),
-                    'percentage': len(matched) / len(required_set) * 100,
-                    'missing_symptom_ids': list(missing),
-                    'missing_symptom_names': missing_names,
-                    'current_symptoms': list(matched),  # Gejala yang sudah cocok
-                    'rule_id': rid,  # Untuk tracking
-                })
-        
-        # Sort by percentage match (descending)
-        suggestions.sort(key=lambda x: x['percentage'], reverse=True)
-        
-        return suggestions
-    
     def diagnose(
         self,
         symptom_ids: List[str],
@@ -512,97 +362,54 @@ class InferenceEngine:
         
         Builds initial facts from symptoms, runs forward chaining,
         selects best disease above threshold, and returns complete result.
-        
-        Args:
-            symptom_ids: List of symptom IDs selected by user
-            user_cf: User's certainty factor (0.0 - 1.0)
-            kb: Knowledge base object dengan attributes:
-                - rules: Dict[str, Rule]
-                - symptoms: Dict[str, Symptom]
-                - diseases: Dict[str, Disease]
-        
-        Returns:
-            Dict with keys:
-            - method: "forward"
-            - facts: List of initial fact IDs
-            - trace: List of reasoning steps
-            - used_rules: List of rule IDs used
-            - reasoning_path: String of rules used
-            - conclusion: Disease ID (or None)
-            - conclusion_label: Disease name
-            - cf: Final confidence factor
-            - recommendation: Treatment recommendation
-            - prevention: List of prevention tips
         """
         # Helper function untuk konversi object ke dict
         def _as_mapping(obj: Any) -> Dict[str, Any]:
-            if obj is None:
-                return {}
-            if isinstance(obj, dict):
-                return obj
-            # pydantic v1/v2
+            if obj is None: return {}
+            if isinstance(obj, dict): return obj
             for attr in ("model_dump", "dict"):
                 if hasattr(obj, attr):
-                    try:
-                        return getattr(obj, attr)()
-                    except Exception:
-                        pass
-            # dataclass or simple object
-            if hasattr(obj, "__dict__"):
-                return dict(obj.__dict__)
+                    try: return getattr(obj, attr)()
+                    except Exception: pass
+            if hasattr(obj, "__dict__"): return dict(obj.__dict__)
             return {}
         
         # Convert rules ke dict format
-        rules = {}
-        for rid, r in getattr(kb, "rules", {}).items():
-            rules[rid] = _as_mapping(r)
+        rules = {rid: _as_mapping(r) for rid, r in getattr(kb, "rules", {}).items()}
         
-        # Build initial facts dengan user CF dan symptom weights
+        # Build initial facts
         initial_facts_cf: Dict[str, float] = {}
         user_cf_clamped = min(1.0, max(0.0, user_cf or 1.0))
-        
         symptoms_map = getattr(kb, "symptoms", {})
         for sid in symptom_ids:
-            s_obj = symptoms_map.get(sid)
-            s_map = _as_mapping(s_obj)
+            s_map = _as_mapping(symptoms_map.get(sid))
             weight = float(s_map.get("weight", 1.0))
-            # CF awal = user_cf * weight gejala
             initial_facts_cf[sid] = min(1.0, max(0.0, user_cf_clamped * weight))
         
         # Run forward chaining
         fwd_result = self.forward_chaining(rules, initial_facts_cf, kb)
         
-        # Get diseases dari KB
-        diseases = getattr(kb, "diseases", {})
-        
         # Cari disease terbaik dari conclusions
+        diseases = getattr(kb, "diseases", {})
         best_disease_id: Optional[str] = None
         best_cf = 0.0
-        
         for disease_id in diseases.keys():
             cf = float(fwd_result["conclusions"].get(disease_id, 0.0))
             if cf > best_cf:
                 best_cf = cf
                 best_disease_id = disease_id
         
-        # Build result
-        trace_rows = fwd_result.get("trace", [])
+        # Siapkan data untuk frontend menggunakan ExplanationFacility
+        symptom_details = self.explanation.get_symptom_details(symptom_ids) if self.explanation else []
         used_rules = fwd_result.get("used_rules", [])
-        reasoning_path = fwd_result.get("reasoning_path", "")
-        
-        # Get symptom details untuk frontend
-        symptom_details = self.get_symptom_details(symptom_ids, kb)
-        
-        # Get rules details untuk frontend
-        rules_details = self.get_rules_details(used_rules, kb) if used_rules else []
-        
+        rules_details = self.explanation.get_rules_details(used_rules) if self.explanation and used_rules else []
+
         result: Dict[str, Any] = {
             "method": "forward",
             "facts": list(initial_facts_cf.keys()),
-            "trace": trace_rows,
+            "trace": fwd_result.get("trace", []),
             "used_rules": used_rules,
-            "reasoning_path": reasoning_path,
-            # Data untuk frontend (no logic needed)
+            "reasoning_path": fwd_result.get("reasoning_path", ""),
             "symptom_details": symptom_details,
             "rules_details": rules_details,
         }
@@ -612,50 +419,17 @@ class InferenceEngine:
             disease_obj = diseases.get(best_disease_id)
             d_map = _as_mapping(disease_obj)
             
-            # Cari recommendation dari rule terakhir yang fired untuk disease ini
-            recommendation: Optional[str] = None
-            for rid in reversed(used_rules):
-                rmap = rules.get(rid, {})
-                if rmap.get("THEN") == best_disease_id:
-                    recommendation = rmap.get("recommendation") or None
-                    if recommendation:
-                        break
-            
-            # Jika tidak ada recommendation dari rule, gunakan treatment pertama
-            if not recommendation:
-                treatments = d_map.get("pengobatan") or d_map.get("treatments") or ""
-                if isinstance(treatments, list) and treatments:
-                    recommendation = treatments[0]
-                elif isinstance(treatments, str):
-                    recommendation = treatments
-            
-            # Get prevention
-            prevention = d_map.get("pencegahan") or d_map.get("prevention") or []
-            if isinstance(prevention, str):
-                prevention = [prevention]
-            
             result.update({
                 "conclusion": best_disease_id,
-                "conclusion_label": d_map.get("nama") or d_map.get("name") or best_disease_id,
+                "conclusion_label": d_map.get("nama", best_disease_id),
                 "cf": round(best_cf, 3),
                 "status": "SUCCESS",
-                "recommendation": recommendation,
-                "prevention": prevention,
-                # Tambahkan info lengkap untuk frontend
-                "disease_info": {
-                    "id": best_disease_id,
-                    "nama": d_map.get("nama") or d_map.get("name", ""),
-                    "penyebab": d_map.get("penyebab", ""),
-                    "deskripsi": d_map.get("deskripsi") or d_map.get("description", ""),
-                    "pengobatan": d_map.get("pengobatan", ""),
-                    "pencegahan": d_map.get("pencegahan", ""),
-                },
+                "disease_info": d_map,
             })
         else:
-            # Tidak ada conclusion yang cukup kuat
-            suggestions = self.get_suggestions(symptom_ids, kb)
+            # Gunakan ExplanationFacility untuk mendapatkan suggestions
+            suggestions = self.explanation.get_suggestions(symptom_ids) if self.explanation else []
             
-            # Tentukan status berdasarkan hasil
             status = "FAILED"
             if suggestions:
                 status = "NEEDS_MORE_INFO"
@@ -664,10 +438,8 @@ class InferenceEngine:
 
             result.update({
                 "conclusion": None,
-                "cf": best_cf, # Kembalikan CF tertinggi meskipun di bawah threshold
+                "cf": best_cf,
                 "status": status,
-                "recommendation": None,
-                "prevention": [],
                 "suggestions": suggestions,
             })
         
