@@ -43,9 +43,35 @@ def prevention_tips(tips: Optional[list[str]] = None):
         for t in tips:
             st.write(f"- {t}")
 
-def trace_expander(trace_rows: List[Dict[str, Any]]):
-    if not trace_rows:
-        return
-    with st.expander("Lihat penjelasan (trace HOW)"):
-        df = pd.DataFrame(trace_rows)
-        st.dataframe(df, width="stretch")
+def trace_expander(result: dict):
+    """Menampilkan expander dengan jejak penalaran (trace) yang user-friendly."""
+    with st.expander("Lihat Jejak Penalaran"):
+        trace_rows = result.get("trace", [])
+        
+        if not trace_rows:
+            st.caption("Tidak ada jejak penalaran yang tercatat untuk diagnosis ini.")
+            return
+
+        st.write("Sistem mencapai kesimpulan melalui langkah-langkah berikut:")
+        
+        # Proses setiap langkah dalam trace
+        for i, step in enumerate(trace_rows):
+            st.markdown(f"---")
+            # Pastikan semua kunci ada, berikan nilai default jika tidak ada
+            rule_id = step.get('rule', 'N/A')
+            matched_if = step.get('matched_if', 'N/A')
+            derived = step.get('derived', 'N/A')
+            cf_after = step.get('cf_after', 0.0)
+            
+            # Tampilkan dalam format yang lebih naratif
+            st.markdown(f"**Langkah {i + 1}: Mengeksekusi Aturan `{rule_id}`**")
+            
+            col1, col2 = st.columns([1, 2])
+            with col1:
+                st.caption("Gejala Cocok:")
+                st.caption("Menghasilkan Fakta:")
+                st.caption("Tingkat Keyakinan Baru:")
+            with col2:
+                st.code(matched_if, language='text')
+                st.code(derived, language='text')
+                st.code(f"{cf_after:.1%}", language='text')
