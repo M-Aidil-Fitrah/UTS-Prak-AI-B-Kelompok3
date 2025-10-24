@@ -134,7 +134,7 @@ def run():
 
         st.divider()
         
-        if st.button("🔎 Jalankan Diagnosis", type="primary", use_container_width=True, disabled=not selected_symptom_ids):
+        if st.button("🔎 Jalankan Diagnosis", type="primary", width="stretch", disabled=not selected_symptom_ids):
             st.session_state.initial_symptoms = selected_symptom_ids
             with st.spinner("Menjalankan inferensi..."):
                 result = engine.diagnose(symptom_ids=selected_symptom_ids, user_cf=st.session_state.user_cf, kb=db)
@@ -165,7 +165,7 @@ def run():
                     st.write(disease_info["pencegahan"])
             
             # Tombol untuk reset
-            if st.button("🔄 Diagnosis Baru", use_container_width=True):
+            if st.button("🔄 Diagnosis Baru", width="stretch"):
                 reset_diagnosis_state()
                 st.rerun()
 
@@ -182,7 +182,7 @@ def run():
 
                 col1, col2 = st.columns(2)
                 with col1:
-                    if st.button("✅ Ya", use_container_width=True):
+                    if st.button("✅ Ya", width="stretch"):
                         new_symptoms = st.session_state.initial_symptoms + [symptom_id_to_add]
                         st.session_state.initial_symptoms = new_symptoms
                         
@@ -192,7 +192,7 @@ def run():
                             st.session_state.diagnosis_result = new_result
                             st.rerun()
                 with col2:
-                    if st.button("❌ Tidak", use_container_width=True):
+                    if st.button("❌ Tidak", width="stretch"):
                         # Save before showing alternatives
                         save_current_diagnosis(storage, logger)
                         st.session_state.show_alternatives = True
@@ -204,14 +204,14 @@ def run():
             save_current_diagnosis(storage, logger)
             st.warning(f"⚠️ Tidak ditemukan diagnosis yang cukup yakin. CF tertinggi: {result.get('cf', 0.0):.1%}")
             st.info("💡 Coba tambahkan gejala lain atau tingkatkan tingkat keyakinan.")
-            if st.button("🔄 Coba Lagi", use_container_width=True):
+            if st.button("🔄 Coba Lagi", width="stretch"):
                 reset_diagnosis_state()
                 st.rerun()
 
         elif status == "FAILED":
             save_current_diagnosis(storage, logger)
             st.error("❌ Tidak ada rules yang cocok dengan kombinasi gejala ini.")
-            if st.button("🔄 Coba Lagi", use_container_width=True):
+            if st.button("🔄 Coba Lagi", width="stretch"):
                 reset_diagnosis_state()
                 st.rerun()
 
@@ -227,7 +227,7 @@ def run():
         else:
             st.info("💡 Tidak ada kemungkinan penyakit lain yang teridentifikasi.")
 
-        if st.button("🔄 Diagnosis Baru", use_container_width=True):
+        if st.button("🔄 Diagnosis Baru", width="stretch"):
             reset_diagnosis_state()
             st.rerun()
 

@@ -87,7 +87,7 @@ def run():
                 })
             
             df = pd.DataFrame(history_data)
-            st.dataframe(df, use_container_width=True, hide_index=True)
+            st.dataframe(df, width="stretch", hide_index=True)
 
             # Search functionality
             st.divider()
@@ -235,7 +235,7 @@ def run():
             st.write("**📊 Export Consultation History to CSV**")
             st.caption("Export seluruh riwayat konsultasi ke format CSV")
             
-            if st.button("📊 Generate CSV Export", use_container_width=True):
+            if st.button("📊 Generate CSV Export", width="stretch"):
                 try:
                     csv_path = storage.export_to_csv()
                     st.success(f"✅ CSV exported: `{csv_path}`")
@@ -250,7 +250,7 @@ def run():
                                 data=csv_data,
                                 file_name=f"consultations_{datetime.now().strftime('%Y%m%d')}.csv",
                                 mime="text/csv",
-                                use_container_width=True
+                                width="stretch"
                             )
                 except Exception as e:
                     st.error(f"❌ Error exporting CSV: {str(e)}")
@@ -277,7 +277,7 @@ def run():
                     label_visibility="collapsed"
                 )
                 
-                if st.button(f"📄 Generate {report_format} Report", use_container_width=True):
+                if st.button(f"📄 Generate {report_format} Report", width="stretch"):
                     try:
                         symptom_ids = latest.get("symptoms", {}).get("ids", [])
                         user_cf = latest.get("user_cf", 0.8) # Gunakan 'user_cf'
@@ -301,7 +301,7 @@ def run():
                                         data=f.read(),
                                         file_name=f"report_{result.get('conclusion', 'diagnosis')}.txt",
                                         mime="text/plain",
-                                        use_container_width=True
+                                        width="stretch"
                                     )
                             
                             else:  # PDF
@@ -319,7 +319,7 @@ def run():
                                             data=f.read(),
                                             file_name=f"report_{result.get('conclusion', 'diagnosis')}.pdf",
                                             mime="application/pdf",
-                                            use_container_width=True
+                                            width="stretch"
                                         )
                                 except ImportError:
                                     st.error("❌ fpdf tidak terinstall. Install: `pip install fpdf`")

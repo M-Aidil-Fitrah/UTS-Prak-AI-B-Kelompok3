@@ -1,0 +1,120 @@
+[
+    {
+        "consultation_id": "C_20251024210043_96956e85",
+        "timestamp": "2025-10-24T21:00:43.504873",
+        "user_info": {},
+        "user_cf": 0.6,
+        "symptoms": {
+            "ids": [
+                "G5",
+                "G1"
+            ],
+            "count": 2
+        },
+        "diagnosis": {
+            "method": "forward",
+            "facts": [
+                "G5",
+                "G1"
+            ],
+            "trace": [],
+            "used_rules": [],
+            "reasoning_path": "",
+            "symptom_details": [
+                {
+                    "id": "G5",
+                    "nama": "Insang pucat atau rusak"
+                },
+                {
+                    "id": "G1",
+                    "nama": "Nafsu makan menurun"
+                }
+            ],
+            "rules_details": [],
+            "conclusion": null,
+            "cf": 0.0,
+            "status": "NEEDS_MORE_INFO",
+            "recommendation": null,
+            "prevention": [],
+            "suggestions": [
+                {
+                    "disease_id": "P3",
+                    "disease_name": "Bacterial Gill Disease (BGD)",
+                    "matched_count": 2,
+                    "total_required": 3,
+                    "percentage": 66.66666666666666,
+                    "missing_symptom_ids": [
+                        "G2"
+                    ],
+                    "missing_symptom_names": [
+                        "Ikan berenang tidak normal atau megap-megap di permukaan"
+                    ],
+                    "current_symptoms": [
+                        "G1",
+                        "G5"
+                    ],
+                    "rule_id": "R3"
+                },
+                {
+                    "disease_id": "P2",
+                    "disease_name": "Aeromonas hydrophila (Penyakit Borok)",
+                    "matched_count": 1,
+                    "total_required": 3,
+                    "percentage": 33.33333333333333,
+                    "missing_symptom_ids": [
+                        "G7",
+                        "G4"
+                    ],
+                    "missing_symptom_names": [
+                        "Sirip rusak atau terkikis",
+                        "Luka atau borok pada tubuh ikan"
+                    ],
+                    "current_symptoms": [
+                        "G1"
+                    ],
+                    "rule_id": "R2"
+                },
+                {
+                    "disease_id": "P5",
+                    "disease_name": "Streptococcosis (Streptococcus agalactiae)",
+                    "matched_count": 1,
+                    "total_required": 3,
+                    "percentage": 33.33333333333333,
+                    "missing_symptom_ids": [
+                        "G8",
+                        "G4"
+                    ],
+                    "missing_symptom_names": [
+                        "Warna tubuh memucat",
+                        "Luka atau borok pada tubuh ikan"
+                    ],
+                    "current_symptoms": [
+                        "G1"
+                    ],
+                    "rule_id": "R5"
+                },
+                {
+                    "disease_id": "P11",
+                    "disease_name": "Masalah Kualitas Air (Stres Lingkungan)",
+                    "matched_count": 1,
+                    "total_required": 4,
+                    "percentage": 25.0,
+                    "missing_symptom_ids": [
+                        "G8",
+                        "G2",
+                        "G12"
+                    ],
+                    "missing_symptom_names": [
+                        "Warna tubuh memucat",
+                        "Ikan berenang tidak normal atau megap-megap di permukaan",
+                        "Mata ikan menonjol atau bengkak"
+                    ],
+                    "current_symptoms": [
+                        "G1"
+                    ],
+                    "rule_id": "R10"
+                }
+            ]
+        }
+    }
+]

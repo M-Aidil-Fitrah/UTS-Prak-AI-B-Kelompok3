@@ -48,4 +48,4 @@ def trace_expander(trace_rows: List[Dict[str, Any]]):
         return
     with st.expander("Lihat penjelasan (trace HOW)"):
         df = pd.DataFrame(trace_rows)
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df, width="stretch")

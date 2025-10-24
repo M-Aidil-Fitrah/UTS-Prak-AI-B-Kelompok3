@@ -56,7 +56,7 @@ def show_symptoms_explorer():
             "Spesies": ", ".join(r.species) if hasattr(r, 'species') and r.species else "Umum"
         })
     
-    st.dataframe(pd.DataFrame(display_data), use_container_width=True)
+    st.dataframe(pd.DataFrame(display_data), width="stretch")
 
 
 def show_diseases_explorer():
