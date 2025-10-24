@@ -1,0 +1,360 @@
+[
+    {
+        "consultation_id": "C_20251024233104_82f17e36",
+        "timestamp": "2025-10-24T23:31:04.863438",
+        "user_info": {},
+        "user_cf": 0.8,
+        "symptoms": {
+            "ids": [
+                "G1",
+                "G2",
+                "G5"
+            ],
+            "count": 3
+        },
+        "diagnosis": {
+            "method": "forward",
+            "facts": [
+                "G1",
+                "G2",
+                "G5"
+            ],
+            "trace": [
+                {
+                    "step": 1,
+                    "rule": "R3",
+                    "matched_if": "G5, G2, G1",
+                    "derived": "P3",
+                    "cf_before": 0.0,
+                    "delta_cf": 0.64,
+                    "cf_after": 0.64,
+                    "facts_before": "G1, G2, G5",
+                    "facts_after": "G1, G2, G5, P3",
+                    "why": null,
+                    "source": null
+                },
+                {
+                    "step": 2,
+                    "rule": "R3",
+                    "matched_if": "G5, G2, G1",
+                    "derived": "P3",
+                    "cf_before": 0.64,
+                    "delta_cf": 0.23,
+                    "cf_after": 0.87,
+                    "facts_before": "G1, G2, G5",
+                    "facts_after": "G1, G2, G5, P3",
+                    "why": null,
+                    "source": null
+                },
+                {
+                    "step": 3,
+                    "rule": "R3",
+                    "matched_if": "G5, G2, G1",
+                    "derived": "P3",
+                    "cf_before": 0.87,
+                    "delta_cf": 0.083,
+                    "cf_after": 0.953,
+                    "facts_before": "G1, G2, G5",
+                    "facts_after": "G1, G2, G5, P3",
+                    "why": null,
+                    "source": null
+                },
+                {
+                    "step": 4,
+                    "rule": "R3",
+                    "matched_if": "G5, G2, G1",
+                    "derived": "P3",
+                    "cf_before": 0.953,
+                    "delta_cf": 0.03,
+                    "cf_after": 0.983,
+                    "facts_before": "G1, G2, G5",
+                    "facts_after": "G1, G2, G5, P3",
+                    "why": null,
+                    "source": null
+                },
+                {
+                    "step": 5,
+                    "rule": "R3",
+                    "matched_if": "G5, G2, G1",
+                    "derived": "P3",
+                    "cf_before": 0.983,
+                    "delta_cf": 0.011,
+                    "cf_after": 0.994,
+                    "facts_before": "G1, G2, G5",
+                    "facts_after": "G1, G2, G5, P3",
+                    "why": null,
+                    "source": null
+                },
+                {
+                    "step": 6,
+                    "rule": "R3",
+                    "matched_if": "G5, G2, G1",
+                    "derived": "P3",
+                    "cf_before": 0.994,
+                    "delta_cf": 0.004,
+                    "cf_after": 0.998,
+                    "facts_before": "G1, G2, G5",
+                    "facts_after": "G1, G2, G5, P3",
+                    "why": null,
+                    "source": null
+                },
+                {
+                    "step": 7,
+                    "rule": "R3",
+                    "matched_if": "G5, G2, G1",
+                    "derived": "P3",
+                    "cf_before": 0.998,
+                    "delta_cf": 0.001,
+                    "cf_after": 0.999,
+                    "facts_before": "G1, G2, G5",
+                    "facts_after": "G1, G2, G5, P3",
+                    "why": null,
+                    "source": null
+                },
+                {
+                    "step": 8,
+                    "rule": "R3",
+                    "matched_if": "G5, G2, G1",
+                    "derived": "P3",
+                    "cf_before": 0.999,
+                    "delta_cf": 0.001,
+                    "cf_after": 1.0,
+                    "facts_before": "G1, G2, G5",
+                    "facts_after": "G1, G2, G5, P3",
+                    "why": null,
+                    "source": null
+                },
+                {
+                    "step": 9,
+                    "rule": "R3",
+                    "matched_if": "G5, G2, G1",
+                    "derived": "P3",
+                    "cf_before": 1.0,
+                    "delta_cf": 0.0,
+                    "cf_after": 1.0,
+                    "facts_before": "G1, G2, G5",
+                    "facts_after": "G1, G2, G5, P3",
+                    "why": null,
+                    "source": null
+                },
+                {
+                    "step": 10,
+                    "rule": "R3",
+                    "matched_if": "G5, G2, G1",
+                    "derived": "P3",
+                    "cf_before": 1.0,
+                    "delta_cf": 0.0,
+                    "cf_after": 1.0,
+                    "facts_before": "G1, G2, G5",
+                    "facts_after": "G1, G2, G5, P3",
+                    "why": null,
+                    "source": null
+                },
+                {
+                    "step": 11,
+                    "rule": "R3",
+                    "matched_if": "G5, G2, G1",
+                    "derived": "P3",
+                    "cf_before": 1.0,
+                    "delta_cf": 0.0,
+                    "cf_after": 1.0,
+                    "facts_before": "G1, G2, G5",
+                    "facts_after": "G1, G2, G5, P3",
+                    "why": null,
+                    "source": null
+                },
+                {
+                    "step": 12,
+                    "rule": "R3",
+                    "matched_if": "G5, G2, G1",
+                    "derived": "P3",
+                    "cf_before": 1.0,
+                    "delta_cf": 0.0,
+                    "cf_after": 1.0,
+                    "facts_before": "G1, G2, G5",
+                    "facts_after": "G1, G2, G5, P3",
+                    "why": null,
+                    "source": null
+                },
+                {
+                    "step": 13,
+                    "rule": "R3",
+                    "matched_if": "G5, G2, G1",
+                    "derived": "P3",
+                    "cf_before": 1.0,
+                    "delta_cf": 0.0,
+                    "cf_after": 1.0,
+                    "facts_before": "G1, G2, G5",
+                    "facts_after": "G1, G2, G5, P3",
+                    "why": null,
+                    "source": null
+                },
+                {
+                    "step": 14,
+                    "rule": "R3",
+                    "matched_if": "G5, G2, G1",
+                    "derived": "P3",
+                    "cf_before": 1.0,
+                    "delta_cf": 0.0,
+                    "cf_after": 1.0,
+                    "facts_before": "G1, G2, G5",
+                    "facts_after": "G1, G2, G5, P3",
+                    "why": null,
+                    "source": null
+                }
+            ],
+            "used_rules": [
+                "R3",
+                "R3",
+                "R3",
+                "R3",
+                "R3",
+                "R3",
+                "R3",
+                "R3",
+                "R3",
+                "R3",
+                "R3",
+                "R3",
+                "R3",
+                "R3"
+            ],
+            "reasoning_path": "R3 -> R3 -> R3 -> R3 -> R3 -> R3 -> R3 -> R3 -> R3 -> R3 -> R3 -> R3 -> R3 -> R3",
+            "symptom_details": [
+                {
+                    "id": "G1",
+                    "nama": "Nafsu makan menurun"
+                },
+                {
+                    "id": "G2",
+                    "nama": "Ikan berenang tidak normal atau megap-megap di permukaan"
+                },
+                {
+                    "id": "G5",
+                    "nama": "Insang pucat atau rusak"
+                }
+            ],
+            "rules_details": [
+                {
+                    "id": "R3",
+                    "if": [
+                        "G5",
+                        "G2",
+                        "G1"
+                    ],
+                    "if_names": [
+                        "Insang pucat atau rusak",
+                        "Ikan berenang tidak normal atau megap-megap di permukaan",
+                        "Nafsu makan menurun"
+                    ],
+                    "then": "P3",
+                    "cf": 0.8
+                }
+            ],
+            "conclusion": "P3",
+            "conclusion_label": "Bacterial Gill Disease (BGD)",
+            "cf": 1.0,
+            "status": "SUCCESS",
+            "recommendation": "Gunakan formalin 25 mg/L selama 1 jam dengan aerasi kuat atau kalium permanganat 2 mg/L.",
+            "prevention": [
+                "Pastikan oksigen terlarut cukup, kurangi sisa pakan, dan jaga kualitas air."
+            ],
+            "disease_info": {
+                "id": "P3",
+                "nama": "Bacterial Gill Disease (BGD)",
+                "penyebab": "Bakteri Flavobacterium branchiophilum",
+                "deskripsi": "Penyakit insang yang menyebabkan ikan megap-megap, insang rusak atau pucat, dan nafsu makan berkurang.",
+                "pengobatan": "Gunakan formalin 25 mg/L selama 1 jam dengan aerasi kuat atau kalium permanganat 2 mg/L.",
+                "pencegahan": "Pastikan oksigen terlarut cukup, kurangi sisa pakan, dan jaga kualitas air."
+            }
+        }
+    },
+    {
+        "consultation_id": "C_20251024231442_bcda40c3",
+        "timestamp": "2025-10-24T23:14:42.365390",
+        "user_info": {},
+        "user_cf": 0.8,
+        "symptoms": {
+            "ids": [
+                "G1",
+                "G2",
+                "G5"
+            ],
+            "count": 3
+        },
+        "diagnosis": {
+            "method": "forward",
+            "facts": [
+                "G1",
+                "G2",
+                "G5"
+            ],
+            "trace": [
+                {
+                    "step": 1,
+                    "rule": "R3",
+                    "matched_if": "G5, G2, G1",
+                    "derived": "P3",
+                    "cf_before": 0.0,
+                    "delta_cf": 0.64,
+                    "cf_after": 0.64,
+                    "facts_before": "G1, G2, G5",
+                    "facts_after": "G1, G2, G5, P3",
+                    "why": null,
+                    "source": null
+                }
+            ],
+            "used_rules": [
+                "R3"
+            ],
+            "reasoning_path": "R3",
+            "symptom_details": [
+                {
+                    "id": "G1",
+                    "nama": "Nafsu makan menurun"
+                },
+                {
+                    "id": "G2",
+                    "nama": "Ikan berenang tidak normal atau megap-megap di permukaan"
+                },
+                {
+                    "id": "G5",
+                    "nama": "Insang pucat atau rusak"
+                }
+            ],
+            "rules_details": [
+                {
+                    "id": "R3",
+                    "if": [
+                        "G5",
+                        "G2",
+                        "G1"
+                    ],
+                    "if_names": [
+                        "Insang pucat atau rusak",
+                        "Ikan berenang tidak normal atau megap-megap di permukaan",
+                        "Nafsu makan menurun"
+                    ],
+                    "then": "P3",
+                    "cf": 0.8
+                }
+            ],
+            "conclusion": "P3",
+            "conclusion_label": "Bacterial Gill Disease (BGD)",
+            "cf": 0.64,
+            "status": "SUCCESS",
+            "recommendation": "Gunakan formalin 25 mg/L selama 1 jam dengan aerasi kuat atau kalium permanganat 2 mg/L.",
+            "prevention": [
+                "Pastikan oksigen terlarut cukup, kurangi sisa pakan, dan jaga kualitas air."
+            ],
+            "disease_info": {
+                "id": "P3",
+                "nama": "Bacterial Gill Disease (BGD)",
+                "penyebab": "Bakteri Flavobacterium branchiophilum",
+                "deskripsi": "Penyakit insang yang menyebabkan ikan megap-megap, insang rusak atau pucat, dan nafsu makan berkurang.",
+                "pengobatan": "Gunakan formalin 25 mg/L selama 1 jam dengan aerasi kuat atau kalium permanganat 2 mg/L.",
+                "pencegahan": "Pastikan oksigen terlarut cukup, kurangi sisa pakan, dan jaga kualitas air."
+            }
+        }
+    }
+]

@@ -1,0 +1,67 @@
+========================================
+      LAPORAN HASIL KONSULTASI
+========================================
+Tanggal: 24-10-2025 05:18:55
+
+GEJALA YANG DILAPORKAN:
+  - Bintik putih pada kulit atau sirip
+  - Tubuh ikan berlendir berlebih
+  - Warna tubuh memucat
+  - Ikan lemas dan cenderung diam di dasar
+
+Tingkat Keyakinan User: 80%
+
+========================================
+
+--- DIAGNOSIS: INFESTASI EKTOPARASIT PROTOZOA (OODINIUM, TRICHODINA, CHILODONELLA) ---
+Tingkat Kepercayaan Sistem: 100.0%
+
+Penyebab:
+Parasit protozoa ektoparasit pada ikan air tawar
+
+Deskripsi:
+Ikan menunjukkan lendir berlebih, bintik-putih atau sirip rusak, sering menggosok tubuh, dan berenang abnormal.
+
+Saran Pengobatan:
+Penggantian air sebagian, perendaman dalam larutan garam ringan, pengurangan kepadatan.
+
+Saran Pencegahan:
+Karantina bibit, pengelolaan kepadatan, kontrol kualitas air.
+
+========================================
+--- ALUR PENALARAN (HOW) ---
+========================================
+
+Urutan Aturan: R6 -> R6 -> R6 -> R6 -> R6 -> R6 -> R6 -> R6 -> R6 -> R6 -> R6 -> R6 -> R6 -> R6
+
+Rules yang Digunakan:
+  - R6: IF ['G3', 'G6', 'G10'] THEN P6 (CF: 0.78)
+  - R6: IF ['G3', 'G6', 'G10'] THEN P6 (CF: 0.78)
+  - R6: IF ['G3', 'G6', 'G10'] THEN P6 (CF: 0.78)
+  - R6: IF ['G3', 'G6', 'G10'] THEN P6 (CF: 0.78)
+  - R6: IF ['G3', 'G6', 'G10'] THEN P6 (CF: 0.78)
+  - R6: IF ['G3', 'G6', 'G10'] THEN P6 (CF: 0.78)
+  - R6: IF ['G3', 'G6', 'G10'] THEN P6 (CF: 0.78)
+  - R6: IF ['G3', 'G6', 'G10'] THEN P6 (CF: 0.78)
+  - R6: IF ['G3', 'G6', 'G10'] THEN P6 (CF: 0.78)
+  - R6: IF ['G3', 'G6', 'G10'] THEN P6 (CF: 0.78)
+  - R6: IF ['G3', 'G6', 'G10'] THEN P6 (CF: 0.78)
+  - R6: IF ['G3', 'G6', 'G10'] THEN P6 (CF: 0.78)
+  - R6: IF ['G3', 'G6', 'G10'] THEN P6 (CF: 0.78)
+  - R6: IF ['G3', 'G6', 'G10'] THEN P6 (CF: 0.78)
+
+Langkah-langkah Detail:
+  - Langkah 1: Aturan R6 digunakan karena [G3, G6, G10] terpenuhi. Menghasilkan 'P6' dengan CF 0.62.
+  - Langkah 2: Aturan R6 digunakan karena [G3, G6, G10] terpenuhi. Menghasilkan 'P6' dengan CF 0.86.
+  - Langkah 3: Aturan R6 digunakan karena [G3, G6, G10] terpenuhi. Menghasilkan 'P6' dengan CF 0.95.
+  - Langkah 4: Aturan R6 digunakan karena [G3, G6, G10] terpenuhi. Menghasilkan 'P6' dengan CF 0.98.
+  - Langkah 5: Aturan R6 digunakan karena [G3, G6, G10] terpenuhi. Menghasilkan 'P6' dengan CF 0.99.
+  - Langkah 6: Aturan R6 digunakan karena [G3, G6, G10] terpenuhi. Menghasilkan 'P6' dengan CF 1.00.
+  - Langkah 7: Aturan R6 digunakan karena [G3, G6, G10] terpenuhi. Menghasilkan 'P6' dengan CF 1.00.
+  - Langkah 8: Aturan R6 digunakan karena [G3, G6, G10] terpenuhi. Menghasilkan 'P6' dengan CF 1.00.
+  - Langkah 9: Aturan R6 digunakan karena [G3, G6, G10] terpenuhi. Menghasilkan 'P6' dengan CF 1.00.
+  - Langkah 10: Aturan R6 digunakan karena [G3, G6, G10] terpenuhi. Menghasilkan 'P6' dengan CF 1.00.
+  - Langkah 11: Aturan R6 digunakan karena [G3, G6, G10] terpenuhi. Menghasilkan 'P6' dengan CF 1.00.
+  - Langkah 12: Aturan R6 digunakan karena [G3, G6, G10] terpenuhi. Menghasilkan 'P6' dengan CF 1.00.
+  - Langkah 13: Aturan R6 digunakan karena [G3, G6, G10] terpenuhi. Menghasilkan 'P6' dengan CF 1.00.
+  - Langkah 14: Aturan R6 digunakan karena [G3, G6, G10] terpenuhi. Menghasilkan 'P6' dengan CF 1.00.
