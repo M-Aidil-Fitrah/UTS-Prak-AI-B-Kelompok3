@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
+from ui.theming import page_header
 
 # Backend imports
 from database.database_manager import DatabaseManager
@@ -9,12 +10,8 @@ from services.storage import StorageService
 from services.logging_service import LoggingService
 from services.reporting import ReportingService
 
-# UI imports
-from ui.theming import page_header
-
 @st.cache_resource
 def get_db():
-    # Get absolute path to database directory
     db_path = Path(__file__).parent.parent / "database"
     db = DatabaseManager(db_path)
     db.load_all()
@@ -35,7 +32,6 @@ def get_reporter():
 def run():
     page_header("History & Reports", "Riwayat konsultasi dan ekspor laporan.")
     
-    # Get backend instances
     db = get_db()
     storage = get_storage()
     logger = get_logger()
@@ -47,7 +43,6 @@ def run():
     with tab1:
         st.subheader("Riwayat Konsultasi")
         
-        # Load history
         col1, col2 = st.columns([3, 1])
         with col1:
             limit = st.slider("Jumlah record yang ditampilkan", 5, 50, 10)
@@ -59,14 +54,11 @@ def run():
         history = storage.load_consultation_history(limit=limit)
         
         if history:
-            # Display as table
             history_data = []
             for i, cons in enumerate(history, 1):
                 diagnosis = cons.get("diagnosis", {})
-                # FIX: Menggunakan 'conclusion' bukan 'disease_id'
                 disease_id = diagnosis.get("conclusion", "N/A")
                 
-                # Enrich with disease name from database
                 disease_name = "Unknown"
                 if disease_id and disease_id != "N/A" and disease_id in db.diseases:
                     disease_name = db.diseases[disease_id].nama
@@ -74,6 +66,8 @@ def run():
                     disease_name = "Failed"
                 elif diagnosis.get("status") == "INCONCLUSIVE":
                     disease_name = "Inconclusive"
+                elif diagnosis.get("status") == "REJECTED_SUGGESTION":
+                    disease_name = "Rejected Suggestion"
 
                 symptoms = cons.get("symptoms", {}).get("ids", [])
                 
@@ -89,7 +83,6 @@ def run():
             df = pd.DataFrame(history_data)
             st.dataframe(df, use_container_width=True, hide_index=True)
 
-            # Search functionality
             st.divider()
             st.subheader("🔍 Search Consultation")
             
@@ -99,8 +92,6 @@ def run():
             with col2:
                 method_filter = st.selectbox("Filter by Method", ["All", "FORWARD", "BACKWARD"])
             
-            # Terapkan filter
-            # FIX: Menggunakan 'conclusion' untuk filter
             search_results = [
                 c for c in history 
                 if (not disease_filter or c.get("diagnosis", {}).get("conclusion") == disease_filter) and
@@ -110,11 +101,10 @@ def run():
             if disease_filter or method_filter != "All":
                 st.info(f"🔎 Found **{len(search_results)}** consultation(s) matching criteria.")
                 if search_results:
-                    for result in search_results[:5]: # Tampilkan 5 hasil teratas
+                    for result in search_results[:5]:
                         diag = result.get("diagnosis", {})
                         disease_id = diag.get("conclusion")
                         
-                        # Dapatkan nama penyakit
                         disease_name = "N/A"
                         if disease_id and disease_id in db.diseases:
                             disease_name = db.diseases[disease_id].nama
@@ -142,7 +132,6 @@ def run():
 
                             st.divider()
                             
-                            # Tampilkan kesimpulan dan aturan yang digunakan
                             st.write(f"**Kesimpulan Diagnosis:** {disease_name}")
                             
                             trace = diag.get("trace", [])
@@ -154,14 +143,13 @@ def run():
                                 st.write("**Aturan yang Digunakan:** Tidak ada aturan spesifik yang tercatat.")
             
         else:
-            st.info("📭 Belum ada riwayat konsultasi. Jalankan diagnosis terlebih dahulu.")
+            st.info("🔭 Belum ada riwayat konsultasi. Jalankan diagnosis terlebih dahulu.")
     
     # ===== TAB 2: Statistics =====
     with tab2:
         st.subheader("📊 Statistik Sistem")
         
-        # Storage statistics
-        history_for_stats = storage.load_consultation_history(limit=None) # Load all for stats
+        history_for_stats = storage.load_consultation_history(limit=None)
         stats = storage.get_statistics(history_for_stats)
         
         col1, col2, col3 = st.columns(3)
@@ -192,7 +180,6 @@ def run():
         
         st.divider()
         
-        # Logger statistics
         st.subheader("📚 Knowledge Base Statistics")
         log_stats = logger.get_statistics()
         
@@ -204,7 +191,6 @@ def run():
         with col3:
             st.metric("Total Symptoms", log_stats.get("total_symptoms", 0))
         
-        # Most used rules
         st.divider()
         st.subheader("🔥 Most Used Rules")
         
@@ -240,7 +226,6 @@ def run():
                     csv_path = storage.export_to_csv()
                     st.success(f"✅ CSV exported: `{csv_path}`")
                     
-                    # Download button
                     import os
                     if os.path.exists(csv_path):
                         with open(csv_path, 'r', encoding='utf-8') as f:
@@ -259,12 +244,10 @@ def run():
             st.write("**📄 Generate Consultation Report**")
             st.caption("Generate detailed report dari konsultasi terakhir")
             
-            # Get latest consultation
             history = storage.load_consultation_history(limit=1)
             
             if history:
                 latest = history[0]
-                # Langsung gunakan objek diagnosis dari history
                 result = latest.get("diagnosis", {})
                 
                 st.info(f"Latest: **{result.get('conclusion', 'N/A')}** "
@@ -280,9 +263,8 @@ def run():
                 if st.button(f"📄 Generate {report_format} Report", use_container_width=True):
                     try:
                         symptom_ids = latest.get("symptoms", {}).get("ids", [])
-                        user_cf = latest.get("user_cf", 0.8) # Gunakan 'user_cf'
+                        user_cf = latest.get("user_cf", 0.8)
                         
-                        # Validasi bahwa 'result' tidak kosong
                         if not result or not result.get('conclusion'):
                             st.error("❌ Laporan tidak dapat dibuat karena diagnosis terakhir tidak berhasil.")
                         else:
@@ -294,7 +276,6 @@ def run():
                                 )
                                 st.success(f"✅ TXT report saved: `{report_path}`")
                                 
-                                # Download button
                                 with open(report_path, 'r', encoding='utf-8') as f:
                                     st.download_button(
                                         label="⬇️ Download TXT",
@@ -304,7 +285,7 @@ def run():
                                         use_container_width=True
                                     )
                             
-                            else:  # PDF
+                            else:
                                 try:
                                     report_path = reporter.generate_pdf_report(
                                         result=result,
