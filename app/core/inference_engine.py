@@ -337,6 +337,171 @@ class InferenceEngine:
                 "trace": [],
             }
     
+    def get_rules_details(
+        self,
+        rule_ids: List[str],
+        kb: Any
+    ) -> List[Dict[str, Any]]:
+        """Get detailed info for list of rules.
+        
+        Args:
+            rule_ids: List of rule IDs
+            kb: Knowledge base object
+            
+        Returns:
+            List of rule details with full information
+        """
+        rules = getattr(kb, "rules", {})
+        symptoms = getattr(kb, "symptoms", {})
+        
+        # Remove duplicates while preserving order
+        unique_rule_ids = list(dict.fromkeys(rule_ids))
+        
+        rule_details = []
+        for rid in unique_rule_ids:
+            rule = rules.get(rid)
+            if not rule:
+                continue
+            
+            if isinstance(rule, dict):
+                antecedents = rule.get('IF', [])
+                consequent = rule.get('THEN', '')
+                cf = rule.get('CF', 1.0)
+            else:
+                antecedents = getattr(rule, 'IF', [])
+                consequent = getattr(rule, 'THEN', '')
+                cf = getattr(rule, 'CF', 1.0)
+            
+            # Get symptom names for antecedents
+            antecedent_names = []
+            for sid in antecedents:
+                symptom_obj = symptoms.get(sid)
+                if isinstance(symptom_obj, dict):
+                    symptom_name = symptom_obj.get('nama', symptom_obj.get('name', sid))
+                else:
+                    symptom_name = getattr(symptom_obj, 'nama', sid) if symptom_obj else sid
+                antecedent_names.append(symptom_name)
+            
+            rule_details.append({
+                "id": rid,
+                "if": antecedents,
+                "if_names": antecedent_names,
+                "then": consequent,
+                "cf": cf
+            })
+        
+        return rule_details
+    
+    def get_symptom_details(
+        self,
+        symptom_ids: List[str],
+        kb: Any
+    ) -> List[Dict[str, str]]:
+        """Get detailed info for list of symptoms.
+        
+        Args:
+            symptom_ids: List of symptom IDs
+            kb: Knowledge base object
+            
+        Returns:
+            List of symptom details with id and nama
+        """
+        symptoms = getattr(kb, "symptoms", {})
+        symptom_details = []
+        
+        for sid in symptom_ids:
+            symptom_obj = symptoms.get(sid)
+            if isinstance(symptom_obj, dict):
+                symptom_name = symptom_obj.get('nama', symptom_obj.get('name', sid))
+            else:
+                symptom_name = getattr(symptom_obj, 'nama', sid) if symptom_obj else sid
+            
+            symptom_details.append({
+                "id": sid,
+                "nama": symptom_name
+            })
+        
+        return symptom_details
+    
+    def get_suggestions(
+        self,
+        symptom_ids: List[str],
+        kb: Any
+    ) -> List[Dict[str, Any]]:
+        """Dapatkan suggestions untuk gejala yang hampir cocok (partial matching).
+        
+        Args:
+            symptom_ids: List of symptom IDs selected by user
+            kb: Knowledge base object
+            
+        Returns:
+            List of suggestions, each containing:
+            - disease_id: Disease ID
+            - disease_name: Disease name
+            - matched_count: Number of matched symptoms
+            - total_required: Total symptoms required
+            - percentage: Match percentage
+            - missing_symptom_ids: List of missing symptom IDs
+            - missing_symptom_names: List of missing symptom names
+        """
+        suggestions = []
+        selected_set = set(symptom_ids)
+        
+        rules = getattr(kb, "rules", {})
+        symptoms = getattr(kb, "symptoms", {})
+        diseases = getattr(kb, "diseases", {})
+        
+        for rid, rule in rules.items():
+            if isinstance(rule, dict):
+                required_symptoms = rule.get('IF', [])
+                disease_id = rule.get('THEN')
+            else:
+                required_symptoms = getattr(rule, 'IF', [])
+                disease_id = getattr(rule, 'THEN', None)
+            
+            if not required_symptoms or not disease_id:
+                continue
+            
+            required_set = set(required_symptoms)
+            matched = selected_set.intersection(required_set)
+            missing = required_set - selected_set
+            
+            # Hanya tampilkan jika ada kecocokan parsial
+            if len(matched) > 0 and len(missing) > 0:
+                # Get disease name
+                disease_obj = diseases.get(disease_id)
+                if isinstance(disease_obj, dict):
+                    disease_name = disease_obj.get('nama', disease_obj.get('name', disease_id))
+                else:
+                    disease_name = getattr(disease_obj, 'nama', disease_id) if disease_obj else disease_id
+                
+                # Get missing symptom names
+                missing_names = []
+                for sid in missing:
+                    symptom_obj = symptoms.get(sid)
+                    if isinstance(symptom_obj, dict):
+                        symptom_name = symptom_obj.get('nama', symptom_obj.get('name', sid))
+                    else:
+                        symptom_name = getattr(symptom_obj, 'nama', sid) if symptom_obj else sid
+                    missing_names.append(symptom_name)
+                
+                suggestions.append({
+                    'disease_id': disease_id,
+                    'disease_name': disease_name,
+                    'matched_count': len(matched),
+                    'total_required': len(required_set),
+                    'percentage': len(matched) / len(required_set) * 100,
+                    'missing_symptom_ids': list(missing),
+                    'missing_symptom_names': missing_names,
+                    'current_symptoms': list(matched),  # Gejala yang sudah cocok
+                    'rule_id': rid,  # Untuk tracking
+                })
+        
+        # Sort by percentage match (descending)
+        suggestions.sort(key=lambda x: x['percentage'], reverse=True)
+        
+        return suggestions
+    
     def diagnose(
         self,
         symptom_ids: List[str],
@@ -425,12 +590,21 @@ class InferenceEngine:
         used_rules = fwd_result.get("used_rules", [])
         reasoning_path = fwd_result.get("reasoning_path", "")
         
+        # Get symptom details untuk frontend
+        symptom_details = self.get_symptom_details(symptom_ids, kb)
+        
+        # Get rules details untuk frontend
+        rules_details = self.get_rules_details(used_rules, kb) if used_rules else []
+        
         result: Dict[str, Any] = {
             "method": "forward",
             "facts": list(initial_facts_cf.keys()),
             "trace": trace_rows,
             "used_rules": used_rules,
             "reasoning_path": reasoning_path,
+            # Data untuk frontend (no logic needed)
+            "symptom_details": symptom_details,
+            "rules_details": rules_details,
         }
         
         # Jika ada conclusion di atas threshold
@@ -464,16 +638,37 @@ class InferenceEngine:
                 "conclusion": best_disease_id,
                 "conclusion_label": d_map.get("nama") or d_map.get("name") or best_disease_id,
                 "cf": round(best_cf, 3),
+                "status": "SUCCESS",
                 "recommendation": recommendation,
                 "prevention": prevention,
+                # Tambahkan info lengkap untuk frontend
+                "disease_info": {
+                    "id": best_disease_id,
+                    "nama": d_map.get("nama") or d_map.get("name", ""),
+                    "penyebab": d_map.get("penyebab", ""),
+                    "deskripsi": d_map.get("deskripsi") or d_map.get("description", ""),
+                    "pengobatan": d_map.get("pengobatan", ""),
+                    "pencegahan": d_map.get("pencegahan", ""),
+                },
             })
         else:
             # Tidak ada conclusion yang cukup kuat
+            suggestions = self.get_suggestions(symptom_ids, kb)
+            
+            # Tentukan status berdasarkan hasil
+            status = "FAILED"
+            if suggestions:
+                status = "NEEDS_MORE_INFO"
+            elif fwd_result["used_rules"]:
+                status = "INCONCLUSIVE"
+
             result.update({
                 "conclusion": None,
-                "cf": 0.0,
+                "cf": best_cf, # Kembalikan CF tertinggi meskipun di bawah threshold
+                "status": status,
                 "recommendation": None,
                 "prevention": [],
+                "suggestions": suggestions,
             })
         
         return result
