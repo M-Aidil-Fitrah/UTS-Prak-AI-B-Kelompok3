@@ -2,6 +2,14 @@
 __pycache__/
 *.py[cod]
 *$py.class
+app/ui/__pycache__/*.pyc
+
+app/__pycache__/
+app/*/__pycache__/
+app/ui/*/__pycache__/
+__pycache__/
+*.py[cod]
+*$py.class
 
 # C extensions
 *.so
